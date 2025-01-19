@@ -9,45 +9,28 @@ CSE 111 Proposal for a Student Chosen Program
     answer each of the following questions to the best of your
     knowledge.)
 
-1. What is the title of your program?
-Utah Big Game Draw Odds Analyzer
+1. What is the title of your program? 
+Evans Archery Practice Tracker
 
 2. What real-world problem will your program address or help to solve?
-As an avid and ethical female archery and rifle hunter, I make conscious efforts and decisions about what species to hunt and where and how I hunt, based on area populations and sustainability. Hunters in Utah often face challenges when deciding where to apply for big game tags due to varying odds, animal population trends, and location preferences. This program will help users analyze historical draw odds, filter areas based on personal preferences, and visualize trends to make informed decisions for their applications. The tool will save hunters time and effort by presenting tailored recommendations.
-Hunters in Utah often face challenges when deciding where to apply for big game tags due to varying odds, animal population trends, and location preferences. This program will help users analyze historical draw odds, filter areas based on personal preferences, and visualize trends to make informed decisions for their applications. The tool will save hunters time and effort by presenting tailored recommendations.
+As a member of the Timpanogos Archery Club and someone invested in improving my accuracy and consistency in archery, I want a tool to track practice sessions, analyze performance, and identify areas needing improvement. Archers often struggle to log and analyze their progress effectively. This program will simplify tracking accuracy and consistency, provide visualizations of progress, and suggest areas for improvement based on performance trends.
+
 
 3. What will you learn from developing this program?
-I will learn how to process and analyze data using Python libraries, create visualizations to represent trends, and write reusable functions for filtering and calculations. Additionally, I’ll gain experience with testing functions using pytest and ensure they perform as expected. This project will also enhance my understanding of integrating different data sources.
+I will learn how to process and analyze data using Python libraries, create visualizations to represent trends, and write reusable functions for logging and analyzing practice sessions. Additionally, I’ll gain experience with testing functions using pytest to ensure reliability. This project will also help me understand how to design user-friendly and practical tools for personal use.
 
 4. What Python modules will your program use?
-
-
-csv: For reading historical odds and population data from files.
-
-pandas: For efficient data filtering and processing.
-
-matplotlib: For creating visualizations of trends and comparisons.
-
-pytest: For writing and running test functions to validate core functionality.
-
-
 
     (Some examples are: csv, datetime, functools, matplotlib, math,
     pandas, pytest, random, requests, and tkinter.)
 
+- csv: For logging practice session data.
+- pandas: For efficient data filtering and processing.
+- matplotlib: For creating visualizations of accuracy trends and comparisons.
+- requests: For retrieving weather data for practice sessions.
+- pytest: For writing and running test functions to validate core functionality.
+
 5. List the names of functions you will need?
-
-load_data(file_path): Reads data from a CSV file and returns it as a structured format (e.g., a DataFrame).
-
-filter_data(criteria): Filters hunting areas based on user-defined criteria like species, weapon type, or region.
-
-calculate_odds(area_id, points): Calculates personalized odds of drawing a tag based on historical data and accrued points.
-
-get_population_estimate(area_id): Retrieves or estimates animal population for a given area.
-
-display_visualizations(filtered_data): Creates charts or graphs to help users compare odds and trends.
-
-get_user_input(): Collects input from the user about preferences for species, region, and other criteria.
 
     (Remember that the most reusable functions don't get user input and
     don't print results but instead have parameters and return a result.
@@ -60,12 +43,14 @@ get_user_input(): Collects input from the user about preferences for species, re
     a result. Therefore, you should write most of your program functions
     to have parameters and return a result.)
 
+log_practice_session(date, distance, arrows, hits): Logs the details of a practice session and calculates accuracy.
+calculate_statistics(data): Aggregates statistics such as total arrows shot, overall accuracy, and most practiced distance.
+generate_progress_report(data, output_file): Creates a text-based progress report summarizing practice statistics.
+get_weather(api_key, location): Fetches weather data for a practice session using an API.
+recommend_distances(data, threshold): Analyzes performance data and suggests distances to focus on for improvement.
+plot_accuracy_trends(data): Generates visualizations to show accuracy trends over time.
+
 6. List the names of the test functions you will write.
-
-
-test_calculate_odds(): Tests the accuracy of the calculate_odds function with mock data.
-
-test_filter_data(): Ensures the filter_data function correctly filters the dataset based on input criteria.
-
-
-
+test_log_practice_session(): Tests the accuracy calculation and proper logging of practice session data.
+test_calculate_statistics(): Ensures statistics are correctly aggregated from the practice session data.
+test_recommend_distances(): Verifies that the function correctly identifies distances needing improvement.
