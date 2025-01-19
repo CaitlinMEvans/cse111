@@ -7,33 +7,63 @@ from datetime import datetime
 # --- Feature: Logging Practice Sessions ---
 def log_practice_session():
     """
-    Prompts the user to log a practice session by entering the date, distance,
-    arrows shot, and hits. Saves the session data to a CSV file and calculates accuracy.
+    Prompts the user to log one or more practice sessions. For each session, the user enters:
+    - Date (default: today if left blank or reuse the previous date)
+    - Distance practiced
+    - Total arrows shot
+    - Hits (arrows on target)
+    Saves the session data to a CSV file and calculates accuracy.
     """
-    date = input("Enter the date (YYYY-MM-DD) or press Enter for today: ").strip()
-    if not date:
-        date = datetime.today().strftime('%Y-%m-%d')  # Default to today
+    previous_date = None  # Track the previous date used
+    while True:
+        # Ask if they want to use the previous date (if applicable)
+        if previous_date:
+            reuse_date = input(f"Use the same date as the previous session ({previous_date})? (y/n): ").strip().lower()
+            if reuse_date == 'y':
+                date = previous_date
+            else:
+                date = input("Enter the date (YYYY-MM-DD) or press Enter for today: ").strip()
+                if not date:
+                    date = datetime.today().strftime('%Y-%m-%d')  # Default to today
+        else:
+            date = input("Enter the date (YYYY-MM-DD) or press Enter for today: ").strip()
+            if not date:
+                date = datetime.today().strftime('%Y-%m-%d')  # Default to today
 
-    try:
-        distance = int(input("Enter the distance practiced (in yards): "))
-        arrows = int(input("Enter the total number of arrows shot: "))
-        hits = int(input("Enter the number of hits (arrows on target): "))
+        # Save the date for reuse
+        previous_date = date
 
-        if arrows <= 0 or hits < 0 or hits > arrows:
-            print("Invalid input: Arrows must be positive, and hits must be between 0 and total arrows.")
-            return
+        try:
+            distance = int(input("Enter the distance practiced (in yards): "))
+            arrows = int(input("Enter the total number of arrows shot: "))
+            hits = int(input("Enter the number of hits (arrows on target): "))
 
-        accuracy = (hits / arrows) * 100
+            # Validate inputs
+            if arrows <= 0 or hits < 0 or hits > arrows:
+                print("Invalid input: Arrows must be positive, and hits must be between 0 and total arrows.")
+                continue
 
-        file_path = "data/session_logs.csv"
-        with open(file_path, mode='a', newline='') as file:
-            writer = csv.writer(file)
-            writer.writerow([date, distance, arrows, hits, round(accuracy, 2)])
+            # Calculate accuracy of arrow hits to total number of arrows 
+            accuracy = (hits / arrows) * 100
 
-        print(f"Session logged: {date}, {distance} yards, {arrows} arrows, {hits} hits, {round(accuracy, 2)}% accuracy")
+            # Append data to CSV
+            file_path = "data/session_logs.csv"
+            with open(file_path, mode='a', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow([date, distance, arrows, hits, round(accuracy, 2)])
 
-    except ValueError:
-        print("Invalid input: Please enter numeric values for distance, arrows, and hits.")
+            print(f"Session logged: {date}, {distance} yards, {arrows} arrows, {hits} hits, {round(accuracy, 2)}% accuracy")
+
+        except ValueError:
+            print("Invalid input: Please enter numeric values for distance, arrows, and hits.")
+            continue
+
+        # Ask if the user wants to log another session
+        another = input("Would you like to log another session? (y/n): ").strip().lower()
+        if another != 'y':
+            print("Returning to the main menu...")
+            break
+
 
 # --- Feature: Calculating Statistics ---
 def calculate_statistics():
