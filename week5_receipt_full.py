@@ -1,6 +1,6 @@
 # Exceeding the Requirements: 3 of 4 completed
-# 1-  print a "return by" date within the 30 days by 9pm
-# 2-  challenge - buy 1 get 1 half off yogurt with the discounted price listed in the totals section
+# 1- print a "return by" date within the 30 days by 9pm
+# 2- challenge - buy 1 get 1 half off yogurt with the discounted price listed in the totals section
 # 3- added coupon at the bottom for one of the items the customer purchased
 
 
