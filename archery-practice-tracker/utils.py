@@ -4,6 +4,27 @@ import requests
 import csv
 from datetime import datetime
 
+# --- Helper: Parse Date ---
+def parse_date(user_input):
+    """
+    Parses a user-entered date in MM/DD/YYYY or MM/DD format and converts it to YYYY-MM-DD.
+    If MM/DD is entered, the current year is assumed.
+    """
+    try:
+        # Try MM/DD/YYYY format
+        if '/' in user_input and len(user_input.split('/')) == 3:
+            parsed_date = datetime.strptime(user_input, '%m/%d/%Y')
+        # Try MM/DD format (assume current year)
+        elif '/' in user_input and len(user_input.split('/')) == 2:
+            current_year = datetime.today().year
+            parsed_date = datetime.strptime(f"{user_input}/{current_year}", '%m/%d/%Y')
+        else:
+            raise ValueError("Invalid date format. Please use MM/DD/YYYY or MM/DD.")
+        return parsed_date.strftime('%Y-%m-%d')  # Convert to standard YYYY-MM-DD format
+    except ValueError as e:
+        print(e)
+        return None
+
 # --- Feature: Logging Practice Sessions ---
 def log_practice_session():
     """
@@ -22,13 +43,25 @@ def log_practice_session():
             if reuse_date == 'y':
                 date = previous_date
             else:
-                date = input("Enter the date (YYYY-MM-DD) or press Enter for today: ").strip()
-                if not date:
-                    date = datetime.today().strftime('%Y-%m-%d')  # Default to today
+                while True:
+                    user_date = input("Enter the date (MM/DD/YYYY or MM/DD) or press Enter for today: ").strip()
+                    if not user_date:
+                        date = datetime.today().strftime('%Y-%m-%d')  # Default to today
+                        break
+                    else:
+                        date = parse_date(user_date)
+                        if date:  # If the date was successfully parsed
+                            break
         else:
-            date = input("Enter the date (YYYY-MM-DD) or press Enter for today: ").strip()
-            if not date:
-                date = datetime.today().strftime('%Y-%m-%d')  # Default to today
+            while True:
+                user_date = input("Enter the date (MM/DD/YYYY or MM/DD) or press Enter for today: ").strip()
+                if not user_date:
+                    date = datetime.today().strftime('%Y-%m-%d')  # Default to today
+                    break
+                else:
+                    date = parse_date(user_date)
+                    if date:  # If the date was successfully parsed
+                        break
 
         # Save the date for reuse
         previous_date = date
@@ -63,7 +96,6 @@ def log_practice_session():
         if another != 'y':
             print("Returning to the main menu...")
             break
-
 
 # --- Feature: Calculating Statistics ---
 def calculate_statistics():
