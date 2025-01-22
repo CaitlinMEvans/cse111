@@ -1,5 +1,8 @@
 import pandas as pd
 import csv
+import json
+from fpdf import FPDF
+import numpy as np  # For handling numpy data types
 from datetime import datetime
 from weather_utils import fetch_weather
 import logging
@@ -117,16 +120,10 @@ def log_practice_session():
     print("Returning to the main menu...")
 
 # --- Feature: Calculating Statistics ---
-import pandas as pd
-
-import pandas as pd
-import json
-from fpdf import FPDF
-
 def calculate_statistics():
     """
     Reads session data from the CSV file, calculates various statistics, and displays them.
-    Offers the option to export the results to JSON and PDF reports.
+    Includes weather data in accuracy trends and offers export options (JSON and PDF).
     """
     file_path = "data/session_logs.csv"
 
@@ -136,55 +133,95 @@ def calculate_statistics():
             print("No practice sessions logged yet.")
             return
 
+        # Convert data types to handle numeric calculations
+        data["accuracy"] = pd.to_numeric(data["accuracy"], errors="coerce")
+        data["temperature"] = pd.to_numeric(data["temperature"], errors="coerce")
+        data["wind_speed"] = pd.to_numeric(data["wind_speed"], errors="coerce")
+        data["precipitation"] = pd.to_numeric(data["precipitation"], errors="coerce")
+
+        # Overall statistics
         total_arrows = data["arrows"].sum()
         total_hits = data["hits"].sum()
         overall_accuracy = (total_hits / total_arrows) * 100
 
+        # Most practiced distances
         distance_counts = data["distance"].value_counts()
         most_practiced_distances = distance_counts[distance_counts == distance_counts.max()].index.tolist()
 
-        accuracy_trends = data.groupby("date")["accuracy"].mean()
+        # Accuracy trends by date (with weather)
+        accuracy_trends = (
+            data.groupby("date")
+            .agg({
+                "accuracy": "mean",
+                "temperature": "mean",
+                "wind_speed": "mean",
+                "precipitation": "mean",
+            })
+            .reset_index()
+        )
 
+        # Frequency by distance
         frequency_by_distance = data["distance"].value_counts()
-        consistency_score = data["accuracy"].std()
 
-        stats = {
-            "total_arrows": total_arrows,
-            "overall_accuracy": overall_accuracy,
-            "most_practiced_distances": most_practiced_distances,
-            "accuracy_trends": accuracy_trends.to_dict(),
-            "practice_frequency": frequency_by_distance.to_dict(),
-            "consistency_score": consistency_score,
-        }
+        # Accuracy by distance
+        accuracy_by_distance = {}
+        for distance, group in data.groupby("distance"):
+            group_sorted = group.sort_values(by="accuracy", ascending=False)
+            most_recent_best = group_sorted.iloc[0]
+            most_recent_lowest = group_sorted.iloc[-1]
+            avg_by_year = group.groupby(group["date"].str[:4])["accuracy"].mean()
+
+            accuracy_by_distance[distance] = {
+                "most_recent_best": (most_recent_best["accuracy"], most_recent_best["date"]),
+                "most_recent_lowest": (most_recent_lowest["accuracy"], most_recent_lowest["date"]),
+                "average_by_year": avg_by_year.to_dict(),
+            }
+
+        # Consistency score
+        consistency_score = data["accuracy"].std()
 
         # Display statistics
         print(f"Total arrows shot: {total_arrows}")
         print(f"Overall accuracy: {overall_accuracy:.2f}%")
-        print(f"Most practiced distance(s): {', '.join(map(str, most_practiced_distances))} yards")
-        print("\nAccuracy trend by date:")
-        for date, accuracy in accuracy_trends.items():
-            print(f"  {date}: {accuracy:.2f}%")
-        print("\nPractice frequency by distance:")
+        print(f"Most practiced distances: {', '.join(map(str, most_practiced_distances))} yards")
+        print("\nAccuracy Trends by Date (with Weather):")
+        for _, row in accuracy_trends.iterrows():
+            print(f"  {row['date']}: {row['accuracy']:.2f}% accuracy")
+            print(f"    Weather - Temp: {row['temperature']:.1f}°F, Wind: {row['wind_speed']:.1f} mph, Precip: {row['precipitation']:.1f} mm")
+
+        print("\nPractice Frequency by Distance:")
         for distance, count in frequency_by_distance.items():
             print(f"  {distance} yards: {count} sessions")
+
+        print("\nAccuracy by Distance:")
+        for distance, details in accuracy_by_distance.items():
+            print(f"  {distance} yards:")
+            print(f"    Most Recent Best: {details['most_recent_best'][0]:.2f}% on {details['most_recent_best'][1]}")
+            for year, avg in details["average_by_year"].items():
+                print(f"    Average for {year}: {avg:.2f}%")
+            print(f"    Most Recent Lowest: {details['most_recent_lowest'][0]:.2f}% on {details['most_recent_lowest'][1]}")
+
         print(f"\nConsistency score (lower is better): {consistency_score:.2f}")
 
         # Export options
         export_json = input("\nWould you like to export the statistics to a JSON report? (y/n): ").strip().lower()
         if export_json == 'y':
-            generate_json_report(stats)
+            generate_json_report(accuracy_trends, stats)
 
         export_pdf = input("Would you like to export the statistics to a PDF report? (y/n): ").strip().lower()
         if export_pdf == 'y':
-            generate_pdf_report(stats)
+            generate_pdf_report(accuracy_trends, stats)
 
     except FileNotFoundError:
         print("No session log file found. Please log a session first.")
     except Exception as e:
         print(f"An error occurred: {e}")
 
-# JSON Report Generation
-def generate_json_report(stats):
+
+def generate_json_report(accuracy_trends, stats):
+    """
+    Generates a JSON report from calculated statistics.
+    """
     file_path = "data/progress_report.json"
     try:
         with open(file_path, "w") as file:
@@ -193,8 +230,11 @@ def generate_json_report(stats):
     except Exception as e:
         print(f"An error occurred while saving the JSON report: {e}")
 
-# PDF Report Generation
-def generate_pdf_report(stats):
+
+def generate_pdf_report(accuracy_trends, stats):
+    """
+    Generates a PDF report of the calculated statistics.
+    """
     file_path = "data/progress_report.pdf"
     pdf = FPDF()
     pdf.set_auto_page_break(auto=True, margin=15)
@@ -212,30 +252,16 @@ def generate_pdf_report(stats):
     pdf.set_font("Arial", size=12)
     pdf.cell(0, 10, f"Total arrows shot: {stats['total_arrows']}", ln=True)
     pdf.cell(0, 10, f"Overall accuracy: {stats['overall_accuracy']:.2f}%", ln=True)
-    pdf.cell(0, 10, f"Most practiced distances: {', '.join(map(str, stats['most_practiced_distances']))} yards", ln=True)
+
+    # Weather in accuracy trends
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(0, 10, "Accuracy Trends (with Weather):", ln=True)
+    for _, row in accuracy_trends.iterrows():
+        pdf.cell(0, 10, f"  {row['date']}: {row['accuracy']:.2f}% accuracy", ln=True)
+        pdf.cell(0, 10, f"    Weather - Temp: {row['temperature']:.1f}°F, Wind: {row['wind_speed']:.1f} mph, Precip: {row['precipitation']:.1f} mm", ln=True)
     pdf.ln(10)
 
-    # Accuracy trends
-    pdf.set_font("Arial", style="B", size=12)
-    pdf.cell(0, 10, "Accuracy Trends by Date:", ln=True)
-    pdf.set_font("Arial", size=12)
-    for date, accuracy in stats["accuracy_trends"].items():
-        pdf.cell(0, 10, f"  {date}: {accuracy:.2f}%", ln=True)
-    pdf.ln(10)
-
-    # Practice frequency
-    pdf.set_font("Arial", style="B", size=12)
-    pdf.cell(0, 10, "Practice Frequency by Distance:", ln=True)
-    pdf.set_font("Arial", size=12)
-    for distance, count in stats["practice_frequency"].items():
-        pdf.cell(0, 10, f"  {distance} yards: {count} sessions", ln=True)
-    pdf.ln(10)
-
-    # Consistency score
-    pdf.set_font("Arial", style="B", size=12)
-    pdf.cell(0, 10, f"Consistency score (lower is better): {stats['consistency_score']:.2f}", ln=True)
-
-    # Save the PDF
+    # Save PDF
     try:
         pdf.output(file_path)
         print(f"PDF report saved to {file_path}")
