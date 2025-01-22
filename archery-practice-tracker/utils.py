@@ -3,6 +3,14 @@ import csv
 from datetime import datetime
 from weather_utils import fetch_weather
 import logging
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Get the directory of the script
+file_path = os.path.join(BASE_DIR, "data", "session_logs.csv")
+
+if not os.path.exists(os.path.join(BASE_DIR, "data")):
+    os.makedirs(os.path.join(BASE_DIR, "data"))
+
 
 # Debug logging
 logging.basicConfig(
@@ -109,7 +117,17 @@ def log_practice_session():
     print("Returning to the main menu...")
 
 # --- Feature: Calculating Statistics ---
+import pandas as pd
+
+import pandas as pd
+import json
+from fpdf import FPDF
+
 def calculate_statistics():
+    """
+    Reads session data from the CSV file, calculates various statistics, and displays them.
+    Offers the option to export the results to JSON and PDF reports.
+    """
     file_path = "data/session_logs.csv"
 
     try:
@@ -122,13 +140,104 @@ def calculate_statistics():
         total_hits = data["hits"].sum()
         overall_accuracy = (total_hits / total_arrows) * 100
 
-        most_practiced_distances = data["distance"].value_counts().idxmax()
+        distance_counts = data["distance"].value_counts()
+        most_practiced_distances = distance_counts[distance_counts == distance_counts.max()].index.tolist()
 
+        accuracy_trends = data.groupby("date")["accuracy"].mean()
+
+        frequency_by_distance = data["distance"].value_counts()
+        consistency_score = data["accuracy"].std()
+
+        stats = {
+            "total_arrows": total_arrows,
+            "overall_accuracy": overall_accuracy,
+            "most_practiced_distances": most_practiced_distances,
+            "accuracy_trends": accuracy_trends.to_dict(),
+            "practice_frequency": frequency_by_distance.to_dict(),
+            "consistency_score": consistency_score,
+        }
+
+        # Display statistics
         print(f"Total arrows shot: {total_arrows}")
         print(f"Overall accuracy: {overall_accuracy:.2f}%")
-        print(f"Most practiced distance: {most_practiced_distances} yards")
+        print(f"Most practiced distance(s): {', '.join(map(str, most_practiced_distances))} yards")
+        print("\nAccuracy trend by date:")
+        for date, accuracy in accuracy_trends.items():
+            print(f"  {date}: {accuracy:.2f}%")
+        print("\nPractice frequency by distance:")
+        for distance, count in frequency_by_distance.items():
+            print(f"  {distance} yards: {count} sessions")
+        print(f"\nConsistency score (lower is better): {consistency_score:.2f}")
+
+        # Export options
+        export_json = input("\nWould you like to export the statistics to a JSON report? (y/n): ").strip().lower()
+        if export_json == 'y':
+            generate_json_report(stats)
+
+        export_pdf = input("Would you like to export the statistics to a PDF report? (y/n): ").strip().lower()
+        if export_pdf == 'y':
+            generate_pdf_report(stats)
 
     except FileNotFoundError:
         print("No session log file found. Please log a session first.")
     except Exception as e:
         print(f"An error occurred: {e}")
+
+# JSON Report Generation
+def generate_json_report(stats):
+    file_path = "data/progress_report.json"
+    try:
+        with open(file_path, "w") as file:
+            json.dump(stats, file, indent=4)
+        print(f"JSON report saved to {file_path}")
+    except Exception as e:
+        print(f"An error occurred while saving the JSON report: {e}")
+
+# PDF Report Generation
+def generate_pdf_report(stats):
+    file_path = "data/progress_report.pdf"
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+
+    # Header
+    pdf.set_font("Arial", style="B", size=16)
+    pdf.cell(200, 10, txt="Archery Practice Tracker Report", ln=True, align="C")
+    pdf.ln(10)
+
+    # Overall statistics
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(0, 10, "Overall Statistics:", ln=True)
+    pdf.set_font("Arial", size=12)
+    pdf.cell(0, 10, f"Total arrows shot: {stats['total_arrows']}", ln=True)
+    pdf.cell(0, 10, f"Overall accuracy: {stats['overall_accuracy']:.2f}%", ln=True)
+    pdf.cell(0, 10, f"Most practiced distances: {', '.join(map(str, stats['most_practiced_distances']))} yards", ln=True)
+    pdf.ln(10)
+
+    # Accuracy trends
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(0, 10, "Accuracy Trends by Date:", ln=True)
+    pdf.set_font("Arial", size=12)
+    for date, accuracy in stats["accuracy_trends"].items():
+        pdf.cell(0, 10, f"  {date}: {accuracy:.2f}%", ln=True)
+    pdf.ln(10)
+
+    # Practice frequency
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(0, 10, "Practice Frequency by Distance:", ln=True)
+    pdf.set_font("Arial", size=12)
+    for distance, count in stats["practice_frequency"].items():
+        pdf.cell(0, 10, f"  {distance} yards: {count} sessions", ln=True)
+    pdf.ln(10)
+
+    # Consistency score
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(0, 10, f"Consistency score (lower is better): {stats['consistency_score']:.2f}", ln=True)
+
+    # Save the PDF
+    try:
+        pdf.output(file_path)
+        print(f"PDF report saved to {file_path}")
+    except Exception as e:
+        print(f"An error occurred while saving the PDF report: {e}")
