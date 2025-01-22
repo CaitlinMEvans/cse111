@@ -2,13 +2,15 @@
 
 # Define main color palette
 COLORS = {
-    "primary": "#FDB52A",  # Color 1
-    "secondary": "#2A66FF",  # Color 3
-    "error": "#FF4545",  # Color 5
-    "success": "#4FC553"  # Color 7
+    "primary": "#FDB52A",  # Bright yellow
+    "secondary": "#2A66FF",  # Bright blue
+    "error": "#FF4545",  # Bright red
+    "success": "#4FC553",  # Bright green
+    "background": "#DDD",  # Light cream for background
+    "entry_border": "#E0E0E0"  # Light gray for entry border
 }
 
 # Define font styles
-FONT_LARGE = ("Arial", 16, "bold")
-FONT_MEDIUM = ("Arial", 12)
-FONT_SMALL = ("Arial", 10)
+FONT_LARGE = ("Poppins", 16, "bold")
+FONT_MEDIUM = ("Poppins", 12)
+FONT_SMALL = ("Poppins", 10)
