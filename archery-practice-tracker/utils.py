@@ -147,8 +147,7 @@ def generate_json_report(stats):
     except Exception as e:
         print(f"An error occurred while saving the JSON report: {e}")
 
-from fpdf import FPDF
-
+# --- Feature: PDF Report ---
 def generate_pdf_report(stats):
     """
     Generates a PDF report of the calculated statistics.
@@ -175,10 +174,11 @@ def generate_pdf_report(stats):
 
     # Accuracy trends
     pdf.set_font("Arial", style="B", size=12)
-    pdf.cell(0, 10, "Accuracy Trends by Date:", ln=True)
+    pdf.cell(0, 10, "Accuracy Trends by Date (with Weather):", ln=True)
     pdf.set_font("Arial", size=12)
-    for date, accuracy in stats["accuracy_trends"].items():
-        pdf.cell(0, 10, f"  {date}: {accuracy:.2f}%", ln=True)
+    for trend in stats["accuracy_trends"]:  # Iterate through the list of trends
+        pdf.cell(0, 10, f"  {trend['date']}: {trend['accuracy']:.2f}% accuracy", ln=True)
+        pdf.cell(0, 10, f"    Weather - Temp: {trend['temperature']:.1f}°F, Wind: {trend['wind_speed']:.1f} mph, Precip: {trend['precipitation']:.1f} mm", ln=True)
     pdf.ln(10)
 
     # Practice frequency
