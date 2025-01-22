@@ -119,6 +119,35 @@ def log_practice_session():
     print(f"Weather: {weather['temperature']}°F, Wind: {weather['wind_speed']} mph, Precipitation: {weather['precipitation']}%")
     print("Returning to the main menu...")
 
+# --- Feature: JSON Report ---
+def generate_json_report(stats):
+    """
+    Generates a JSON report of the calculated statistics.
+    """
+    file_path = "data/progress_report.json"
+
+    def convert_to_serializable(obj):
+        """
+        Convert objects like Pandas data to serializable formats.
+        """
+        if isinstance(obj, (pd.Series, pd.DataFrame)):
+            return obj.to_dict()
+        if isinstance(obj, (np.int64, np.float64)):
+            return obj.item()
+        if isinstance(obj, (set, tuple)):
+            return list(obj)
+        return obj
+
+    try:
+        # Serialize statistics and write to a JSON file
+        serializable_stats = json.loads(json.dumps(stats, default=convert_to_serializable))
+        with open(file_path, "w") as file:
+            json.dump(serializable_stats, file, indent=4)
+        print(f"JSON report saved to {file_path}")
+    except Exception as e:
+        print(f"An error occurred while saving the JSON report: {e}")
+
+
 # --- Feature: Calculating Statistics ---
 def calculate_statistics():
     """
@@ -180,6 +209,17 @@ def calculate_statistics():
         # Consistency score
         consistency_score = data["accuracy"].std()
 
+        # Prepare statistics dictionary
+        stats = {
+            "total_arrows": total_arrows,
+            "overall_accuracy": overall_accuracy,
+            "most_practiced_distances": most_practiced_distances,
+            "accuracy_trends": accuracy_trends.to_dict("records"),
+            "practice_frequency": frequency_by_distance.to_dict(),
+            "accuracy_by_distance": accuracy_by_distance,
+            "consistency_score": consistency_score,
+        }
+
         # Display statistics
         print(f"Total arrows shot: {total_arrows}")
         print(f"Overall accuracy: {overall_accuracy:.2f}%")
@@ -206,64 +246,13 @@ def calculate_statistics():
         # Export options
         export_json = input("\nWould you like to export the statistics to a JSON report? (y/n): ").strip().lower()
         if export_json == 'y':
-            generate_json_report(accuracy_trends, stats)
+            generate_json_report(stats)
 
         export_pdf = input("Would you like to export the statistics to a PDF report? (y/n): ").strip().lower()
         if export_pdf == 'y':
-            generate_pdf_report(accuracy_trends, stats)
+            generate_pdf_report(stats)
 
     except FileNotFoundError:
         print("No session log file found. Please log a session first.")
     except Exception as e:
         print(f"An error occurred: {e}")
-
-
-def generate_json_report(accuracy_trends, stats):
-    """
-    Generates a JSON report from calculated statistics.
-    """
-    file_path = "data/progress_report.json"
-    try:
-        with open(file_path, "w") as file:
-            json.dump(stats, file, indent=4)
-        print(f"JSON report saved to {file_path}")
-    except Exception as e:
-        print(f"An error occurred while saving the JSON report: {e}")
-
-
-def generate_pdf_report(accuracy_trends, stats):
-    """
-    Generates a PDF report of the calculated statistics.
-    """
-    file_path = "data/progress_report.pdf"
-    pdf = FPDF()
-    pdf.set_auto_page_break(auto=True, margin=15)
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-
-    # Header
-    pdf.set_font("Arial", style="B", size=16)
-    pdf.cell(200, 10, txt="Archery Practice Tracker Report", ln=True, align="C")
-    pdf.ln(10)
-
-    # Overall statistics
-    pdf.set_font("Arial", style="B", size=12)
-    pdf.cell(0, 10, "Overall Statistics:", ln=True)
-    pdf.set_font("Arial", size=12)
-    pdf.cell(0, 10, f"Total arrows shot: {stats['total_arrows']}", ln=True)
-    pdf.cell(0, 10, f"Overall accuracy: {stats['overall_accuracy']:.2f}%", ln=True)
-
-    # Weather in accuracy trends
-    pdf.set_font("Arial", style="B", size=12)
-    pdf.cell(0, 10, "Accuracy Trends (with Weather):", ln=True)
-    for _, row in accuracy_trends.iterrows():
-        pdf.cell(0, 10, f"  {row['date']}: {row['accuracy']:.2f}% accuracy", ln=True)
-        pdf.cell(0, 10, f"    Weather - Temp: {row['temperature']:.1f}°F, Wind: {row['wind_speed']:.1f} mph, Precip: {row['precipitation']:.1f} mm", ln=True)
-    pdf.ln(10)
-
-    # Save PDF
-    try:
-        pdf.output(file_path)
-        print(f"PDF report saved to {file_path}")
-    except Exception as e:
-        print(f"An error occurred while saving the PDF report: {e}")
