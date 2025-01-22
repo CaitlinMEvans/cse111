@@ -6,7 +6,7 @@ COLORS = {
     "secondary": "#2A66FF",  # Bright blue
     "error": "#FF4545",  # Bright red
     "success": "#4FC553",  # Bright green
-    "background": "#DDD",  # Light cream for background
+    "background": "#DDD",  # Light grey for background
     "entry_border": "#E0E0E0"  # Light gray for entry border
 }
 
