@@ -147,6 +147,70 @@ def generate_json_report(stats):
     except Exception as e:
         print(f"An error occurred while saving the JSON report: {e}")
 
+from fpdf import FPDF
+
+def generate_pdf_report(stats):
+    """
+    Generates a PDF report of the calculated statistics.
+    """
+    file_path = "data/progress_report.pdf"
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+
+    # Header
+    pdf.set_font("Arial", style="B", size=16)
+    pdf.cell(200, 10, txt="Archery Practice Tracker Report", ln=True, align="C")
+    pdf.ln(10)
+
+    # Overall statistics
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(0, 10, "Overall Statistics:", ln=True)
+    pdf.set_font("Arial", size=12)
+    pdf.cell(0, 10, f"Total arrows shot: {stats['total_arrows']}", ln=True)
+    pdf.cell(0, 10, f"Overall accuracy: {stats['overall_accuracy']:.2f}%", ln=True)
+    pdf.cell(0, 10, f"Most practiced distances: {', '.join(map(str, stats['most_practiced_distances']))} yards", ln=True)
+    pdf.ln(10)
+
+    # Accuracy trends
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(0, 10, "Accuracy Trends by Date:", ln=True)
+    pdf.set_font("Arial", size=12)
+    for date, accuracy in stats["accuracy_trends"].items():
+        pdf.cell(0, 10, f"  {date}: {accuracy:.2f}%", ln=True)
+    pdf.ln(10)
+
+    # Practice frequency
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(0, 10, "Practice Frequency by Distance:", ln=True)
+    pdf.set_font("Arial", size=12)
+    for distance, count in stats["practice_frequency"].items():
+        pdf.cell(0, 10, f"  {distance} yards: {count} sessions", ln=True)
+    pdf.ln(10)
+
+    # Accuracy by distance
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(0, 10, "Accuracy by Distance:", ln=True)
+    pdf.set_font("Arial", size=12)
+    for distance, details in stats["accuracy_by_distance"].items():
+        pdf.cell(0, 10, f"  {distance} yards:", ln=True)
+        pdf.cell(0, 10, f"    Most Recent Best: {details['most_recent_best'][0]:.2f}% on {details['most_recent_best'][1]}", ln=True)
+        for year, avg in details["average_by_year"].items():
+            pdf.cell(0, 10, f"    Average for {year}: {avg:.2f}%", ln=True)
+        pdf.cell(0, 10, f"    Most Recent Lowest: {details['most_recent_lowest'][0]:.2f}% on {details['most_recent_lowest'][1]}", ln=True)
+        pdf.ln(5)
+
+    # Consistency score
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(0, 10, f"Consistency score (lower is better): {stats['consistency_score']:.2f}", ln=True)
+
+    # Save the PDF
+    try:
+        pdf.output(file_path)
+        print(f"PDF report saved to {file_path}")
+    except Exception as e:
+        print(f"An error occurred while saving the PDF report: {e}")
 
 # --- Feature: Calculating Statistics ---
 def calculate_statistics():
