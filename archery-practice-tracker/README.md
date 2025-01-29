@@ -1,6 +1,8 @@
 # Evans Archery Practice Tracker
 
-The **Evans Archery Practice Tracker** is a Python-based tool to log, analyze, and visualize your archery practice data. It also includes weather integration for better performance tracking.
+The **Evans Archery Practice Tracker** is a Python-based tool to log, analyze, and visualize your archery practice data. It also includes weather integration for better performance tracking and features intuitive visualizations to help identify areas for improvement.
+
+---
 
 ## Features
 
@@ -11,6 +13,10 @@ The **Evans Archery Practice Tracker** is a Python-based tool to log, analyze, a
   - Total arrows shot
   - Hits (arrows on target)
   - Accuracy percentage (calculated automatically)
+  - Weather data:
+    - Temperature
+    - Wind speed
+    - Chance of precipitation
 - Logs are saved to a CSV file for analysis.
 
 ### 2. Viewing Practice Statistics
@@ -18,56 +24,66 @@ The **Evans Archery Practice Tracker** is a Python-based tool to log, analyze, a
   - Total arrows shot
   - Overall accuracy
   - Most practiced distances
-  - Accuracy trends by date
+  - Accuracy trends by date (including weather data)
   - Practice frequency by distance
   - Consistency score
 - Export statistics as:
   - JSON file
   - PDF report
 
-### 3. Weather Integration
-- Fetches current weather data from the **National Weather Service (NWS)** API.
+### 3. Distance-Based Recommendations
+- Highlights distances where average accuracy falls below a threshold (default: 75%).
+- Provides actionable insights to focus on problem areas.
+
+### 4. Visualizations
+- **Line Chart**: Accuracy trends over time.
+- **Bar Chart**: Accuracy by distance.
+- Export charts as PNG and PDF.
+
+### 5. Weather Integration
+- Fetches current weather data from the **Weather API**.
 - Includes:
   - Temperature (Fahrenheit and Celsius)
   - Wind speed
   - Chance of precipitation
   - Detailed forecast
-- Option to log weather data for additional insights.
+- Logs weather data for each practice session.
+
+---
 
 ## Project Structure
+
 ```plaintext
 archery-practice-tracker/
 ├── main.py              # Main program logic (menu, user interaction)
 ├── utils.py             # Shared helper functions (logging, statistics)
+├── visualizations.py    # Visualization functions (line/bar charts)
 ├── weather_utils.py     # Weather-specific functions
+├── tests/               # Directory for unit tests -- Moved to main directory. 
+│   ├── test_utils.py
+│   ├── test_visualizations.py
 ├── data/                # Directory for CSV logs and reports
+├── exports/             # Directory for visualization exports
 ├── requirements.txt     # Python dependencies
 ├── README.md            # Documentation
 ```
 
 ## Setup Instructions
-
 ### 1. Install Dependencies
 Ensure you have Python 3 installed. Run the following command to install required libraries:
-```bash
 pip install -r requirements.txt
-```
 
 ### 2. Set Up Environment Variables
-Create a `.env` file in the project root to store the default location for weather data:
-```
+Create a .env file in the project root to store your Weather API key and default location:
+WEATHER_API_KEY=your_api_key_here
 DEFAULT_LAT=40.2837
 DEFAULT_LON=-111.635
-```
 
 ### 3. Run the Program
 Launch the program using:
-```bash
 python main.py
-```
 
 ## Usage
-
 ### Main Menu
 Upon running the program, you will see the following menu:
 ```plaintext
@@ -75,71 +91,79 @@ Upon running the program, you will see the following menu:
 1. Log a new practice session
 2. View practice statistics
 3. View current weather
-4. Quit
+4. View distance-based recommendations
+5. View visualizations
+6. Quit
 ```
-
+## Main Menu Breakdown
 ### 1. Log a New Practice Session
-- Enter the session date (MM/DD or MM/DD/YYYY format) or press Enter for today.
-- Enter distance practiced, total arrows shot, and hits.
-- The program calculates accuracy and saves the session.
-
+Enter the session date (MM/DD or MM/DD/YYYY format) or press Enter for today.
+Enter distance practiced, total arrows shot, and hits.
+The program calculates accuracy and logs weather data automatically.
 ### 2. View Practice Statistics
-- Displays statistics such as total arrows, accuracy, and practice frequency.
-- Option to export the data as JSON or PDF reports.
-
+Displays aggregated statistics such as total arrows, accuracy, and practice frequency.
+Option to export the data as JSON or PDF reports.
 ### 3. View Current Weather
-- Choose to use the default Timpanogos Archers Club location or enter a custom latitude and longitude.
-- Displays:
-  - Temperature (Fahrenheit and Celsius)
-  - Wind speed
-  - Chance of precipitation
-  - Detailed forecast
-
-## Weather Integration
-<!-- The program uses the **National Weather Service (NWS)** API for weather data. -->
-The program uses the **Weather API** API for weather data.
-
-### Fetching Weather
-- Default location: Timpanogos Archers Club (Kyhv Peak Rd, Provo, UT 84604).
-- User can enter custom coordinates if practicing elsewhere.
-
-### Logged Weather Data
-- Temperature
-- Wind speed
-- Precipitation chance
-- Detailed forecast
+Choose to use the default Timpanogos Archers Club location or enter a custom latitude and longitude.
+Displays:
+Temperature (Fahrenheit and Celsius)
+Wind speed
+Chance of precipitation
+Detailed forecast
+### 4. View Distance-Based Recommendations
+Highlights distances where accuracy falls below the set threshold (default: 75%).
+Suggests distances to focus on for improvement.
+### 5. View Visualizations
+Line Chart: Accuracy trends over time.
+Bar Chart: Accuracy by distance.
+Option to export charts as PNG and PDF.
 
 ## Example Output
-
 ### Practice Statistics Example
 ```plaintext
-Total arrows shot: 93
-Overall accuracy: 86.02%
-Most practiced distance(s): 20, 50, 40 yards
+Total arrows shot: 120
+Overall accuracy: 87.50%
+Most practiced distance(s): 20, 50 yards
 
 Accuracy trend by date:
-  2025-01-01: 83.33%
-  2025-01-02: 75.00%
-  2025-01-18: 100.00%
-  2025-01-19: 93.70%
+  2025-01-20: 85.00%
+  2025-01-21: 80.00%
+  2025-01-22: 90.00%
+  2025-01-23: 95.00%
 
 Practice frequency by distance:
-  20 yards: 2 sessions
+  20 yards: 3 sessions
   50 yards: 2 sessions
-  40 yards: 2 sessions
+  30 yards: 1 session
+```
+### Distance-Based Recommendations Example
+```plaintext
+--- Distance-Based Recommendations ---
+Distance: 20 yards | Avg Accuracy: 85.00% | Status: Good Performance
+Distance: 50 yards | Avg Accuracy: 70.00% | Status: Needs Improvement
+
+Distances to Focus On:
+  50 yards: 70.00%
 ```
 
 ### Weather Example
 ```plaintext
 Current Weather for 40.2837, -111.635:
-- Temperature: 50°F (10°C)
-- Wind: 10 mph
-- Precipitation Chance: 20%
-- Detailed Forecast: Partly cloudy with a chance of rain.
+- Temperature: 45°F (7°C)
+- Wind: 5 mph
+- Precipitation Chance: 10%
+- Detailed Forecast: Clear skies with light winds.
 ```
+### Visualizations Example:
+Line Chart: Accuracy Trends Over Time
+Bar Chart: Accuracy by Distance
 
-## Contributing
-Feel free to contribute to this project by submitting issues or pull requests.
+## Testing
+### Unit Tests
+pytest -v
 
-<!-- ## License
-This project is licensed under the MIT License. -->
+Tests cover:
+Logging practice sessions
+Generating statistics
+Visualizations
+File export functionality
