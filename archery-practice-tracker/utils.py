@@ -191,20 +191,97 @@ def recommend_distances(threshold=75, max_distance=100):
 
 # --- Feature: Calculating Statistics ---
 def calculate_statistics():
+    """
+    Reads session data from the CSV file, calculates various statistics, and returns them as a dictionary.
+    Includes weather data in accuracy trends and provides detailed analysis.
+    """
     try:
+        # File path setup
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+        file_path = os.path.join(BASE_DIR, "data", "session_logs.csv")
+        
+        # Load and validate data
         data = pd.read_csv(file_path)
         if data.empty:
-            print("No practice sessions logged yet.")
-            return
-
-        # Overall statistics
+            raise ValueError("No practice sessions logged yet.")
+        
+        # Convert data types
+        data["accuracy"] = pd.to_numeric(data["accuracy"], errors="coerce")
+        data["temperature"] = pd.to_numeric(data["temperature"], errors="coerce")
+        data["wind_speed"] = pd.to_numeric(data["wind_speed"], errors="coerce")
+        data["precipitation"] = pd.to_numeric(data["precipitation"], errors="coerce")
+        
+        # Calculate statistics (same as previous implementation)
         total_arrows = data["arrows"].sum()
         total_hits = data["hits"].sum()
         overall_accuracy = (total_hits / total_arrows) * 100
+        distance_counts = data["distance"].value_counts()
+        most_practiced_distances = distance_counts[distance_counts == distance_counts.max()].index.tolist()
+        accuracy_trends = (
+            data.groupby("date")
+            .agg({
+                "accuracy": "mean",
+                "temperature": "mean",
+                "wind_speed": "mean",
+                "precipitation": "mean",
+            })
+            .reset_index()
+        )
+        practice_frequency = data["distance"].value_counts().to_dict()
+        accuracy_by_distance = {}
+        for distance, group in data.groupby("distance"):
+            group_sorted = group.sort_values(by="accuracy", ascending=False)
+            most_recent_best = group_sorted.iloc[0]
+            avg_by_year = group.groupby(group["date"].str[:4])["accuracy"].mean()
+            accuracy_by_distance[distance] = {
+                "most_recent_best": (most_recent_best["accuracy"], most_recent_best["date"]),
+                "average_by_year": avg_by_year.to_dict(),
+            }
+        consistency_score = data["accuracy"].std()
+
+        # Display statistics in the terminal
         print(f"Total arrows shot: {total_arrows}")
         print(f"Overall accuracy: {overall_accuracy:.2f}%")
+        print(f"Most practiced distances: {', '.join(map(str, most_practiced_distances))}")
+        print("\nAccuracy Trends by Date:")
+        for _, row in accuracy_trends.iterrows():
+            print(f"  {row['date']}: {row['accuracy']:.2f}% accuracy")
+            print(f"    Weather - Temp: {row['temperature']:.1f}°F, Wind: {row['wind_speed']:.1f} mph, Precip: {row['precipitation']:.1f} mm")
+        print("\nPractice Frequency by Distance:")
+        for distance, count in practice_frequency.items():
+            print(f"  {distance} yards: {count} sessions")
+        print("\nAccuracy by Distance:")
+        for distance, details in accuracy_by_distance.items():
+            print(f"  {distance} yards:")
+            print(f"    Most Recent Best: {details['most_recent_best'][0]:.2f}% on {details['most_recent_best'][1]}")
+            for year, avg in details["average_by_year"].items():
+                print(f"    Average for {year}: {avg:.2f}%")
+        print(f"\nConsistency score (lower is better): {consistency_score:.2f}")
 
+        # Prepare statistics dictionary
+        stats = {
+            "total_arrows": total_arrows,
+            "overall_accuracy": overall_accuracy,
+            "most_practiced_distances": most_practiced_distances,
+            "accuracy_trends": accuracy_trends.to_dict("records"),
+            "practice_frequency": practice_frequency,
+            "accuracy_by_distance": accuracy_by_distance,
+            "consistency_score": consistency_score,
+        }
+
+        # Export prompts
+        export_json = input("\nWould you like to export the statistics to a JSON report? (y/n): ").strip().lower()
+        if export_json == "y":
+            generate_json_report(stats)
+            print("Statistics exported as JSON.")
+
+        export_pdf = input("Would you like to export the statistics to a PDF report? (y/n): ").strip().lower()
+        if export_pdf == "y":
+            generate_pdf_report(stats)
+            print("Statistics exported as PDF.")
+
+        return stats
     except FileNotFoundError:
-        print("No session log file found. Please log a session first.")
+        print("Session log file not found. Please log a session first.")
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"An error occurred while calculating statistics: {e}")
