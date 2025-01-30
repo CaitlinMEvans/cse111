@@ -1,221 +1,42 @@
 {
-    "total_arrows": 150,
-    "overall_accuracy": 81.33333333333333,
+    "total_arrows": 100,
+    "overall_accuracy": 85.5,
     "most_practiced_distances": [
         20,
-        30,
-        50,
-        40,
-        70,
-        45,
-        33,
-        55,
-        75
+        30
     ],
     "accuracy_trends": [
         {
-            "date": "2025-01-01",
-            "accuracy": 83.33,
-            "temperature": 23.4,
-            "wind_speed": 2.9,
-            "precipitation": 0.0
-        },
-        {
-            "date": "2025-01-02",
-            "accuracy": 75.0,
-            "temperature": 23.4,
-            "wind_speed": 2.9,
-            "precipitation": 0.0
-        },
-        {
-            "date": "2025-01-18",
-            "accuracy": 100.0,
-            "temperature": 23.4,
-            "wind_speed": 2.9,
-            "precipitation": 0.0
-        },
-        {
-            "date": "2025-01-19",
-            "accuracy": 91.81818181818181,
-            "temperature": 23.4,
-            "wind_speed": 2.9,
-            "precipitation": 0.0
-        },
-        {
-            "date": "2025-01-21",
-            "accuracy": 85.0,
-            "temperature": 23.399999999999995,
-            "wind_speed": 2.9,
-            "precipitation": 0.0
-        },
-        {
-            "date": "2025-01-29",
-            "accuracy": 69.666,
-            "temperature": 24.419999999999998,
-            "wind_speed": 2.3,
-            "precipitation": 0.0
-        },
-        {
             "date": "2025-01-30",
-            "accuracy": 50.0,
-            "temperature": 22.65,
-            "wind_speed": 2.2,
+            "accuracy": 90.0,
+            "temperature": 70.0,
+            "wind_speed": 5.0,
             "precipitation": 0.0
         }
     ],
     "practice_frequency": {
-        "20": 2,
-        "30": 2,
-        "50": 2,
-        "40": 2,
-        "70": 2,
-        "45": 2,
-        "33": 2,
-        "55": 2,
-        "75": 2,
-        "35": 1,
-        "80": 1,
-        "78": 1,
-        "88": 1,
-        "10": 1,
-        "15": 1
+        "20": 3,
+        "30": 2
     },
     "accuracy_by_distance": {
-        "10": {
-            "most_recent_best": [
-                0.0,
-                "2025-01-30"
-            ],
-            "average_by_year": {
-                "2025": 0.0
-            }
-        },
-        "15": {
-            "most_recent_best": [
-                100.0,
-                "2025-01-30"
-            ],
-            "average_by_year": {
-                "2025": 100.0
-            }
-        },
         "20": {
             "most_recent_best": [
-                100.0,
-                "2025-01-18"
+                95.0,
+                "2025-01-30"
             ],
             "average_by_year": {
-                "2025": 91.66499999999999
+                "2025": 92.5
             }
         },
         "30": {
             "most_recent_best": [
-                75.0,
-                "2025-01-02"
-            ],
-            "average_by_year": {
-                "2025": 52.5
-            }
-        },
-        "33": {
-            "most_recent_best": [
-                100.0,
-                "2025-01-19"
-            ],
-            "average_by_year": {
-                "2025": 90.0
-            }
-        },
-        "35": {
-            "most_recent_best": [
-                100.0,
-                "2025-01-19"
-            ],
-            "average_by_year": {
-                "2025": 100.0
-            }
-        },
-        "40": {
-            "most_recent_best": [
-                100.0,
-                "2025-01-19"
+                85.0,
+                "2025-01-30"
             ],
             "average_by_year": {
                 "2025": 80.0
-            }
-        },
-        "45": {
-            "most_recent_best": [
-                100.0,
-                "2025-01-19"
-            ],
-            "average_by_year": {
-                "2025": 91.66499999999999
-            }
-        },
-        "50": {
-            "most_recent_best": [
-                100.0,
-                "2025-01-19"
-            ],
-            "average_by_year": {
-                "2025": 91.66499999999999
-            }
-        },
-        "55": {
-            "most_recent_best": [
-                100.0,
-                "2025-01-21"
-            ],
-            "average_by_year": {
-                "2025": 80.0
-            }
-        },
-        "70": {
-            "most_recent_best": [
-                100.0,
-                "2025-01-19"
-            ],
-            "average_by_year": {
-                "2025": 100.0
-            }
-        },
-        "75": {
-            "most_recent_best": [
-                75.0,
-                "2025-01-21"
-            ],
-            "average_by_year": {
-                "2025": 70.83500000000001
-            }
-        },
-        "78": {
-            "most_recent_best": [
-                100.0,
-                "2025-01-29"
-            ],
-            "average_by_year": {
-                "2025": 100.0
-            }
-        },
-        "80": {
-            "most_recent_best": [
-                100.0,
-                "2025-01-19"
-            ],
-            "average_by_year": {
-                "2025": 100.0
-            }
-        },
-        "88": {
-            "most_recent_best": [
-                75.0,
-                "2025-01-29"
-            ],
-            "average_by_year": {
-                "2025": 75.0
             }
         }
     },
-    "consistency_score": 25.259313779449663
+    "consistency_score": 5.0
 }
