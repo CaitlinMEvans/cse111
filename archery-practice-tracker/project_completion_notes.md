@@ -41,7 +41,7 @@ I had issues with having the test files in a test directory so they are in the m
 ---------------
 test_utils.py (7 tests)
 test_visualizations.py (4 tests)
-test_weather_inegration.py (8 tests)
+test_weather_integration.py (8 tests)
 
 
 
