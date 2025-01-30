@@ -23,34 +23,42 @@ def setup_test_data():
     yield TEST_CSV_PATH  # Provide the test CSV file path
     os.remove(TEST_CSV_PATH)  # Cleanup after tests
 
+def test_log_practice_session(setup_test_data):
+    """Test logging a practice session."""
+    date = "2025-01-25"
+    distance = 60
+    arrows = 15
+    hits = 10
+    accuracy = 66.67
+    temperature = 30.0
+    wind_speed = 3.0
+    precipitation = 0.5
+
+    log_practice_session(date, distance, arrows, hits, accuracy, temperature, wind_speed, precipitation)
+
+    # Verify entry in CSV
+    df = pd.read_csv(TEST_CSV_PATH)
+    assert len(df) == 5, "New session was not logged correctly."
+    assert df.iloc[-1]["date"] == date, "Date mismatch in logged session."
+
 def test_recommend_distances(setup_test_data):
     """Test distance recommendations based on accuracy thresholds."""
-    print("\nTesting Distance Recommendations...\n")
-    recommend_distances(threshold=75, max_distance=100)  # Should highlight 70 yards as an area needing improvement
+    recommend_distances(threshold=75, max_distance=100)  # Should highlight 70 yards as needing improvement
 
 def test_calculate_statistics(setup_test_data):
     """Test that statistics are calculated correctly without errors."""
-    print("\nTesting Statistics Calculation...\n")
-    calculate_statistics()
+    stats = calculate_statistics(gui_mode=True)
+    assert "total_arrows" in stats, "Statistics calculation is missing 'total_arrows'."
+    assert stats["total_arrows"] == sum([row[2] for row in TEST_DATA]), "Total arrows mismatch."
 
 def test_json_export(setup_test_data):
     """Test exporting statistics as JSON."""
-    stats = {
-        "total_arrows": 65,
-        "overall_accuracy": 67.0,
-        "most_practiced_distances": [20, 30],
-        "accuracy_trends": [{"date": "2025-01-20", "accuracy": 83.33}],
-    }
+    stats = calculate_statistics(gui_mode=True)
     generate_json_report(stats)
     assert os.path.exists("data/progress_report.json"), "JSON report was not created."
 
 def test_pdf_export(setup_test_data):
     """Test exporting statistics as PDF."""
-    stats = {
-        "total_arrows": 65,
-        "overall_accuracy": 67.0,
-        "most_practiced_distances": [20, 30],
-        "accuracy_trends": [{"date": "2025-01-20", "accuracy": 83.33}],
-    }
+    stats = calculate_statistics(gui_mode=True)
     generate_pdf_report(stats)
     assert os.path.exists("data/progress_report.pdf"), "PDF report was not created."

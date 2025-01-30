@@ -1,18 +1,16 @@
 from visualizations import plot_accuracy_over_time, plot_accuracy_by_distance
-from utils import calculate_statistics, recommend_distances, log_practice_session_terminal
+from utils import calculate_statistics, recommend_distances, log_practice_session_terminal, generate_json_report, generate_pdf_report
 from weather_utils import fetch_weather
+
 
 def view_current_weather():
     """
     Asks if the user is at the Timpanogos Archery Club and fetches weather data accordingly.
     """
-    # Default coordinates for Timpanogos Archery Club
     default_location = "40.2837,-111.635"
 
-    # Ask the user if they are at the Timpanogos Archery Club
     at_timpanogos = input("Are you practicing at the Timpanogos Archery Club? (y/n): ").strip().lower()
 
-    # Fetch weather data based on the user's answer
     if at_timpanogos == "y":
         weather = fetch_weather(default_location)
         location = "Timpanogos Archery Club"
@@ -21,7 +19,6 @@ def view_current_weather():
         weather = fetch_weather(zipcode)
         location = f"ZIP Code: {zipcode}"
 
-    # Display weather data
     if weather:
         print(f"--- Current Weather for {location} ---")
         print(f"Temperature: {weather['temperature']}°F")
@@ -34,7 +31,7 @@ def view_current_weather():
 
 
 def view_statistics():
-    """Fetch and display practice statistics."""
+    """Fetch and display practice statistics with export options."""
     try:
         stats = calculate_statistics()
 
@@ -60,10 +57,23 @@ def view_statistics():
                 print(f"    Average for {year}: {avg:.2f}%")
 
         print(f"\nConsistency score (lower is better): {stats['consistency_score']:.2f}")
+
+        # Prompt for exporting statistics
+        export_json = input("\nWould you like to export the statistics to a JSON report? (y/n): ").strip().lower()
+        if export_json == "y":
+            generate_json_report(stats)
+            print("Statistics exported as JSON.")
+
+        export_pdf = input("Would you like to export the statistics to a PDF report? (y/n): ").strip().lower()
+        if export_pdf == "y":
+            generate_pdf_report(stats)
+            print("Statistics exported as PDF.")
+
     except FileNotFoundError:
         print("Session log file not found. Please log a session first.")
     except RuntimeError as e:
         print(f"Error: {e}")
+
 
 if __name__ == "__main__":
     while True:
