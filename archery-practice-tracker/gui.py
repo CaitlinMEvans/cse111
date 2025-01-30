@@ -1,17 +1,19 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from tkinter import StringVar, IntVar, messagebox
+from tkinter.simpledialog import askstring
 import os
 from utils import (
     log_practice_session,
     calculate_statistics,
     generate_json_report,
     generate_pdf_report,
-    recommend_distances,  # Add this if distance recommendations are needed.
 )
 from weather_utils import fetch_weather
 from visualizations import plot_accuracy_over_time, plot_accuracy_by_distance
 
+# Cache for location
+location_cache = {"use_default_location": True, "zipcode": None}
 
 # Initialize application window
 app = ttk.Window(themename="flatly")
@@ -24,7 +26,6 @@ SECONDARY_COLOR = "#023047"
 LIGHT_GREEN = "#606C38"
 DARK_GREEN = "#283618"
 YELLOW = "#FFB703"
-ORANGE = "#FB8500"
 WHITE = "#FFFFFF"
 
 # --- Styles ---
@@ -63,7 +64,10 @@ def submit_session():
         return
 
     try:
-        log_practice_session(date, distance, arrows, hits)
+        # Use the cached location for weather
+        if not prompt_location():
+            return
+        log_practice_session(date, distance, arrows, hits, location_cache["zipcode"])
         messagebox.showinfo("Success", "Session logged successfully!")
         date_var.set("")
         distance_var.set(0)
@@ -94,7 +98,7 @@ tabs.add(stats_frame, text="View Statistics")
 def display_statistics():
     """Fetches and displays statistics in the GUI."""
     try:
-        stats = calculate_statistics(gui_mode=True)  # Pass gui_mode=True
+        stats = calculate_statistics(gui_mode=True)
         formatted_stats = (f"Total arrows shot: {stats['total_arrows']}\n"
                            f"Overall accuracy: {stats['overall_accuracy']:.2f}%\n"
                            f"Most practiced distances: {', '.join(map(str, stats['most_practiced_distances']))}\n")
@@ -129,26 +133,36 @@ display_statistics()
 weather_frame = ttk.Frame(tabs, style="TFrame.DarkBlue.TFrame")
 tabs.add(weather_frame, text="Weather")
 
+def prompt_location():
+    """Prompt the user for their practice location and cache it."""
+    global location_cache
+    if location_cache["zipcode"] is None:
+        use_default_location = messagebox.askyesno("Location", "Are you practicing at the Timpanogos Archery Club?")
+        if use_default_location:
+            location_cache["zipcode"] = "40.2837,-111.635"
+        else:
+            zipcode = askstring("Enter ZIP Code", "Please enter your ZIP code:")
+            if zipcode:
+                location_cache["zipcode"] = zipcode
+            else:
+                messagebox.showerror("Error", "No ZIP code provided.")
+                return False
+    return True
+
 def display_weather():
     """Fetches and displays current weather data."""
     try:
-        use_default_location = messagebox.askyesno("Location", "Are you practicing at the Timpanogos Archery Club?")
-        if use_default_location:
-            weather = fetch_weather("40.2837,-111.635")
-            location = "Timpanogos Archery Club"
-        else:
-            zipcode = messagebox.askstring("Enter ZIP Code", "Please enter your ZIP code:")
-            weather = fetch_weather(zipcode)
-            location = f"ZIP Code: {zipcode}"
-
+        if not prompt_location():
+            return
+        query = location_cache["zipcode"]
+        weather = fetch_weather(query)
         if weather:
-            weather_text.set(f"Location: {location}\n"
-                             f"Temperature: {weather['temperature']}°F\n"
+            weather_text.set(f"Temperature: {weather['temperature']}°F\n"
                              f"Wind Speed: {weather['wind_speed']} mph\n"
                              f"Precipitation: {weather['precipitation']} mm\n"
                              f"Condition: {weather['condition']}")
         else:
-            weather_text.set("Error fetching weather data. Please try again.")
+            weather_text.set("Error fetching weather data.")
     except Exception as e:
         weather_text.set(f"Error: {e}")
 
@@ -158,8 +172,6 @@ weather_label = ttk.Label(weather_frame, textvariable=weather_text, style="TLabe
 weather_label.pack(pady=10)
 
 ttk.Button(weather_frame, text="Refresh Weather", command=display_weather).pack(pady=10)
-
-display_weather()
 
 # --- Visualizations Tab ---
 visualizations_frame = ttk.Frame(tabs, style="TFrame.DarkBlue.TFrame")
@@ -175,7 +187,6 @@ def display_visualization(option):
 ttk.Label(visualizations_frame, text="Practice Visualizations", style="Header.TLabel").pack(pady=10)
 
 ttk.Button(visualizations_frame, text="Accuracy Over Time", command=lambda: display_visualization("accuracy_over_time")).pack(pady=10)
-
 ttk.Button(visualizations_frame, text="Accuracy by Distance", command=lambda: display_visualization("accuracy_by_distance")).pack(pady=10)
 
 # --- Run the App ---

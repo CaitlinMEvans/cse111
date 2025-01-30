@@ -48,72 +48,36 @@ def prompt_date():
 
 
 # --- Feature: Logging Practice Sessions ---
-def log_practice_session():
+def log_practice_session(date, distance, arrows, hits, use_default_location=True, zipcode=None):
     """
-    Allows users to log one or more practice sessions.
-    Fetches weather data once at the end and appends it to all sessions logged.
+    Logs a single practice session.
+    :param date: The date of the session.
+    :param distance: Distance practiced in yards.
+    :param arrows: Total number of arrows shot.
+    :param hits: Number of hits on target.
+    :param use_default_location: Boolean indicating if the default location should be used.
+    :param zipcode: ZIP code for weather if not using the default location.
     """
-    sessions = []  # Temporary storage for sessions logged in this round
-    previous_date = None
-
-    while True:
-        # Handle date input
-        if previous_date:
-            reuse_date = input(f"Use the same date as the previous session ({previous_date})? (y/n): ").strip().lower()
-            if reuse_date == 'y':
-                date = previous_date
-            else:
-                date = prompt_date()
-        else:
-            date = prompt_date()
-
-        previous_date = date
-
-        try:
-            # Collect session details
-            distance = int(input("Enter the distance practiced (in yards): "))
-            arrows = int(input("Enter the total number of arrows shot: "))
-            hits = int(input("Enter the number of hits (arrows on target): "))
-
-            if arrows <= 0 or hits < 0 or hits > arrows:
-                print("Invalid input: Arrows must be positive, and hits must be between 0 and total arrows.")
-                continue
-
-            # Calculate accuracy and store session
-            accuracy = (hits / arrows) * 100
-            sessions.append([date, distance, arrows, hits, round(accuracy, 2)])
-            print(f"Session recorded: {date}, {distance} yards, {arrows} arrows, {hits} hits, {round(accuracy, 2)}% accuracy")
-        except ValueError:
-            print("Invalid input: Please enter numeric values for distance, arrows, and hits.")
-            continue
-
-        another = input("Would you like to log another session? (y/n): ").strip().lower()
-        if another != 'y':
-            break
-
-    # Fetch weather data once
-    use_default_location = input("Are you practicing at the Timpanogos Archery Club? (y/n): ").strip().lower()
-    if use_default_location == 'y':
-        weather = fetch_weather("40.2837", "-111.635")  # Default club coordinates
-    else:
-        latitude = input("Enter latitude (e.g., 40.2837): ").strip()
-        longitude = input("Enter longitude (e.g., -111.635): ").strip()
-        weather = fetch_weather(latitude, longitude)
-
-    if not weather:
-        print("Unable to fetch weather data. Proceeding without weather information.")
-        weather = {"temperature": "N/A", "wind_speed": "N/A", "precipitation": "N/A"}
-
-    # Append sessions to CSV
     try:
-        with open(file_path, mode='a', newline='') as file:
+        accuracy = (hits / arrows) * 100
+
+        # Fetch weather data
+        if use_default_location:
+            weather = fetch_weather("40.2837,-111.635")  # Default Timpanogos Archery Club coordinates
+        elif zipcode:
+            weather = fetch_weather(zipcode)
+        else:
+            weather = {"temperature": "N/A", "wind_speed": "N/A", "precipitation": "N/A"}
+
+        # Append session to CSV
+        with open(file_path, mode="a", newline="") as file:
             writer = csv.writer(file)
-            for session in sessions:
-                session.extend([weather['temperature'], weather['wind_speed'], weather['precipitation']])
-                writer.writerow(session)
-        print(f"All sessions logged successfully to {file_path}")
+            writer.writerow([date, distance, arrows, hits, round(accuracy, 2), weather["temperature"], weather["wind_speed"], weather["precipitation"]])
+        
+        print(f"Session logged: {date}, {distance} yards, {arrows} arrows, {hits} hits, {round(accuracy, 2)}% accuracy.")
     except Exception as e:
-        print(f"An error occurred while saving the sessions: {e}")
+        print(f"Error logging session: {e}")
+        raise e
 
 
 # --- Feature: Generating a JSON Report ---
