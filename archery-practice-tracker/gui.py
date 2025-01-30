@@ -2,9 +2,16 @@ import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from tkinter import StringVar, IntVar, messagebox
 import os
-from utils import log_practice_session, calculate_statistics, generate_json_report, generate_pdf_report
+from utils import (
+    log_practice_session,
+    calculate_statistics,
+    generate_json_report,
+    generate_pdf_report,
+    recommend_distances,  # Add this if distance recommendations are needed.
+)
 from weather_utils import fetch_weather
 from visualizations import plot_accuracy_over_time, plot_accuracy_by_distance
+
 
 # Initialize application window
 app = ttk.Window(themename="flatly")
@@ -87,10 +94,10 @@ tabs.add(stats_frame, text="View Statistics")
 def display_statistics():
     """Fetches and displays statistics in the GUI."""
     try:
-        stats = calculate_statistics()
+        stats = calculate_statistics(gui_mode=True)  # Pass gui_mode=True
         formatted_stats = (f"Total arrows shot: {stats['total_arrows']}\n"
                            f"Overall accuracy: {stats['overall_accuracy']:.2f}%\n"
-                           f"Most practiced distances: {', '.join(map(str, stats['most_practiced_distances']))}")
+                           f"Most practiced distances: {', '.join(map(str, stats['most_practiced_distances']))}\n")
         stats_text.set(formatted_stats)
     except Exception as e:
         stats_text.set(f"Error fetching statistics: {e}")

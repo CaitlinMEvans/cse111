@@ -190,7 +190,7 @@ def recommend_distances(threshold=75, max_distance=100):
 
 
 # --- Feature: Calculating Statistics ---
-def calculate_statistics():
+def calculate_statistics(gui_mode=False):
     """
     Reads session data from the CSV file, calculates various statistics, and returns them as a dictionary.
     Includes weather data in accuracy trends and provides detailed analysis.
@@ -239,25 +239,6 @@ def calculate_statistics():
             }
         consistency_score = data["accuracy"].std()
 
-        # Display statistics in the terminal
-        print(f"Total arrows shot: {total_arrows}")
-        print(f"Overall accuracy: {overall_accuracy:.2f}%")
-        print(f"Most practiced distances: {', '.join(map(str, most_practiced_distances))}")
-        print("\nAccuracy Trends by Date:")
-        for _, row in accuracy_trends.iterrows():
-            print(f"  {row['date']}: {row['accuracy']:.2f}% accuracy")
-            print(f"    Weather - Temp: {row['temperature']:.1f}°F, Wind: {row['wind_speed']:.1f} mph, Precip: {row['precipitation']:.1f} mm")
-        print("\nPractice Frequency by Distance:")
-        for distance, count in practice_frequency.items():
-            print(f"  {distance} yards: {count} sessions")
-        print("\nAccuracy by Distance:")
-        for distance, details in accuracy_by_distance.items():
-            print(f"  {distance} yards:")
-            print(f"    Most Recent Best: {details['most_recent_best'][0]:.2f}% on {details['most_recent_best'][1]}")
-            for year, avg in details["average_by_year"].items():
-                print(f"    Average for {year}: {avg:.2f}%")
-        print(f"\nConsistency score (lower is better): {consistency_score:.2f}")
-
         # Prepare statistics dictionary
         stats = {
             "total_arrows": total_arrows,
@@ -269,16 +250,17 @@ def calculate_statistics():
             "consistency_score": consistency_score,
         }
 
-        # Export prompts
-        export_json = input("\nWould you like to export the statistics to a JSON report? (y/n): ").strip().lower()
-        if export_json == "y":
-            generate_json_report(stats)
-            print("Statistics exported as JSON.")
+        # Export prompts if not in GUI mode
+        if not gui_mode:
+            export_json = input("\nWould you like to export the statistics to a JSON report? (y/n): ").strip().lower()
+            if export_json == "y":
+                generate_json_report(stats)
+                print("Statistics exported as JSON.")
 
-        export_pdf = input("Would you like to export the statistics to a PDF report? (y/n): ").strip().lower()
-        if export_pdf == "y":
-            generate_pdf_report(stats)
-            print("Statistics exported as PDF.")
+            export_pdf = input("Would you like to export the statistics to a PDF report? (y/n): ").strip().lower()
+            if export_pdf == "y":
+                generate_pdf_report(stats)
+                print("Statistics exported as PDF.")
 
         return stats
     except FileNotFoundError:
