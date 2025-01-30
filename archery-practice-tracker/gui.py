@@ -11,6 +11,7 @@ from utils import (
 )
 from weather_utils import fetch_weather
 from visualizations import plot_accuracy_over_time, plot_accuracy_by_distance
+from datetime import datetime
 
 # Cache for location
 location_cache = {"use_default_location": True, "zipcode": None}
@@ -59,21 +60,29 @@ def submit_session():
     arrows = arrows_var.get()
     hits = hits_var.get()
 
-    if not date or distance <= 0 or arrows <= 0 or hits < 0 or hits > arrows:
+    # Set the current date if the date field is empty
+    if not date.strip():
+        date = datetime.today().strftime('%m/%d/%Y')
+
+    # Validation for other fields
+    if distance <= 0 or arrows <= 0 or hits < 0 or hits > arrows:
         messagebox.showerror("Invalid Input", "Please provide valid input for all fields.")
         return
 
     try:
-        # Use the cached location for weather
-        if not prompt_location():
-            return
-        log_practice_session(date, distance, arrows, hits, location_cache["zipcode"])
+        # Use cached location for weather details
+        query = location_cache["zipcode"]  # Cached location (default or provided by the user)
+        
+        log_practice_session(date, distance, arrows, hits, query)
         messagebox.showinfo("Success", "Session logged successfully!")
+        
+        # Reset fields
         date_var.set("")
         distance_var.set(0)
         arrows_var.set(0)
         hits_var.set(0)
-        display_statistics()
+        
+        display_statistics()  # Refresh statistics
     except Exception as e:
         messagebox.showerror("Error", f"Failed to log session: {e}")
 

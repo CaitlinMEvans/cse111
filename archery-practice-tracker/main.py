@@ -1,5 +1,5 @@
 from visualizations import plot_accuracy_over_time, plot_accuracy_by_distance
-from utils import log_practice_session, calculate_statistics, recommend_distances
+from utils import calculate_statistics, recommend_distances, log_practice_session_terminal
 from weather_utils import fetch_weather
 
 def view_current_weather():
@@ -78,7 +78,7 @@ if __name__ == "__main__":
 
         choice = input("Enter your choice (1/2/3/4/5/6/7): ").strip()
         if choice == "1":
-            log_practice_session()
+            log_practice_session_terminal()
         elif choice == "2":
             view_statistics()
         elif choice == "3":

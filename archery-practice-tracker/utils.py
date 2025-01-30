@@ -48,36 +48,42 @@ def prompt_date():
 
 
 # --- Feature: Logging Practice Sessions ---
-def log_practice_session(date, distance, arrows, hits, use_default_location=True, zipcode=None):
+def log_practice_session(date, distance, arrows, hits, location):
     """
-    Logs a single practice session.
-    :param date: The date of the session.
-    :param distance: Distance practiced in yards.
-    :param arrows: Total number of arrows shot.
-    :param hits: Number of hits on target.
-    :param use_default_location: Boolean indicating if the default location should be used.
-    :param zipcode: ZIP code for weather if not using the default location.
+    Core implementation for logging practice sessions, used by both GUI and terminal.
     """
     try:
         accuracy = (hits / arrows) * 100
-
-        # Fetch weather data
-        if use_default_location:
-            weather = fetch_weather("40.2837,-111.635")  # Default Timpanogos Archery Club coordinates
-        elif zipcode:
-            weather = fetch_weather(zipcode)
-        else:
-            weather = {"temperature": "N/A", "wind_speed": "N/A", "precipitation": "N/A"}
-
-        # Append session to CSV
-        with open(file_path, mode="a", newline="") as file:
-            writer = csv.writer(file)
-            writer.writerow([date, distance, arrows, hits, round(accuracy, 2), weather["temperature"], weather["wind_speed"], weather["precipitation"]])
+        session_data = [date, distance, arrows, hits, accuracy, location]
         
-        print(f"Session logged: {date}, {distance} yards, {arrows} arrows, {hits} hits, {round(accuracy, 2)}% accuracy.")
+        # Append session to CSV
+        with open(file_path, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(session_data)
+        
+        print(f"Session logged: {date}, {distance} yards, {arrows} arrows, {hits} hits, {accuracy:.2f}% accuracy.")
     except Exception as e:
         print(f"Error logging session: {e}")
-        raise e
+
+def log_practice_session_terminal():
+    """
+    Handles terminal-specific input for logging practice sessions.
+    """
+    try:
+        date = input("Enter the date (MM/DD/YYYY): ").strip()
+        distance = int(input("Enter the distance (yards): ").strip())
+        arrows = int(input("Enter the total arrows shot: ").strip())
+        hits = int(input("Enter the hits on target: ").strip())
+        
+        if hits > arrows:
+            raise ValueError("Hits cannot exceed total arrows shot.")
+
+        location = "40.2837,-111.635" if input("At Timpanogos Archery Club? (y/n): ").lower() == "y" else input("Enter ZIP code or location: ").strip()
+        
+        # Call the core function
+        log_practice_session(date, distance, arrows, hits, location)
+    except Exception as e:
+        print(f"Error logging session: {e}")
 
 
 # --- Feature: Generating a JSON Report ---
