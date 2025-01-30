@@ -3,19 +3,35 @@ from utils import log_practice_session, calculate_statistics, recommend_distance
 from weather_utils import fetch_weather
 
 def view_current_weather():
-    """Fetch and display current weather data."""
-    try:
-        # Default coordinates for Timpanogos Archery Club
-        latitude, longitude = "40.2837", "-111.635"
-        weather = fetch_weather(latitude, longitude)
+    """
+    Asks if the user is at the Timpanogos Archery Club and fetches weather data accordingly.
+    """
+    # Default coordinates for Timpanogos Archery Club
+    default_location = "40.2837,-111.635"
 
-        print("\n--- Current Weather ---")
+    # Ask the user if they are at the Timpanogos Archery Club
+    at_timpanogos = input("Are you practicing at the Timpanogos Archery Club? (y/n): ").strip().lower()
+
+    # Fetch weather data based on the user's answer
+    if at_timpanogos == "y":
+        weather = fetch_weather(default_location)
+        location = "Timpanogos Archery Club"
+    else:
+        zipcode = input("Enter your ZIP code: ").strip()
+        weather = fetch_weather(zipcode)
+        location = f"ZIP Code: {zipcode}"
+
+    # Display weather data
+    if weather:
+        print(f"--- Current Weather for {location} ---")
         print(f"Temperature: {weather['temperature']}°F")
         print(f"Wind Speed: {weather['wind_speed']} mph")
-        print(f"Precipitation Chance: {weather['precipitation']}%")
-        print(f"Forecast: {weather['forecast']}")
-    except Exception as e:
-        print(f"Error fetching weather data: {e}")
+        print(f"Precipitation: {weather['precipitation']} mm")
+        print(f"Condition: {weather['condition']}")
+        print(f"Forecast: {weather.get('forecast', 'No forecast available')}")
+    else:
+        print("Unable to fetch weather data. Please try again later.")
+
 
 def view_statistics():
     """Fetch and display practice statistics."""
