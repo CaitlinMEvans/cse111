@@ -48,45 +48,67 @@ def prompt_date():
 
 
 # --- Feature: Logging Practice Sessions ---
-def log_practice_session(date, distance, arrows, hits, location):
+def log_practice_session(date, distance, arrows, hits, accuracy, temperature, wind_speed, precipitation):
     """
-    Core implementation for logging practice sessions, used by both GUI and terminal.
+    Logs a practice session with all details, including weather data, into the CSV file.
     """
     try:
-        accuracy = (hits / arrows) * 100
-        session_data = [date, distance, arrows, hits, accuracy, location]
-        
-        # Append session to CSV
-        with open(file_path, mode='a', newline='') as file:
+        # Ensure the file exists and has a header
+        if not os.path.exists(file_path):
+            with open(file_path, mode="w", newline="") as file:
+                writer = csv.writer(file)
+                writer.writerow(["date", "distance", "arrows", "hits", "accuracy", "temperature", "wind_speed", "precipitation"])
+
+        # Log the session data
+        with open(file_path, mode="a", newline="") as file:
             writer = csv.writer(file)
-            writer.writerow(session_data)
-        
-        print(f"Session logged: {date}, {distance} yards, {arrows} arrows, {hits} hits, {accuracy:.2f}% accuracy.")
+            writer.writerow([date, distance, arrows, hits, accuracy, temperature, wind_speed, precipitation])
+
+        logging.info(f"Session logged: {date}, {distance} yards, {arrows} arrows, {hits} hits, "
+                     f"{accuracy:.2f}% accuracy, {temperature}°F, {wind_speed} mph, {precipitation} mm")
     except Exception as e:
-        print(f"Error logging session: {e}")
+        logging.error(f"Failed to log session: {e}")
+        raise RuntimeError(f"An error occurred while logging the session: {e}")
+
 
 def log_practice_session_terminal():
     """
-    Handles terminal-specific input for logging practice sessions.
+    Logs a practice session via terminal input, calculates weather data, and adds details automatically.
     """
     try:
-        date = input("Enter the date (MM/DD/YYYY): ").strip()
+        # Prompt for date and use the current date if none is provided
+        date_input = input("Enter the date (MM/DD/YYYY) or press Enter for today: ").strip()
+        if not date_input:
+            date = datetime.today().strftime('%Y-%m-%d')  # Default to today's date
+        else:
+            try:
+                date = datetime.strptime(date_input, '%m/%d/%Y').strftime('%Y-%m-%d')
+            except ValueError:
+                raise ValueError("Invalid date format. Please use MM/DD/YYYY.")
+
+        # Prompt for other details
         distance = int(input("Enter the distance (yards): ").strip())
         arrows = int(input("Enter the total arrows shot: ").strip())
         hits = int(input("Enter the hits on target: ").strip())
-        
+
         if hits > arrows:
             raise ValueError("Hits cannot exceed total arrows shot.")
 
-        location = "40.2837,-111.635" if input("At Timpanogos Archery Club? (y/n): ").lower() == "y" else input("Enter ZIP code or location: ").strip()
-        
-        # Call the core function
-        log_practice_session(date, distance, arrows, hits, location)
+        # Prompt for location and fetch weather data
+        use_default_location = input("At Timpanogos Archery Club? (y/n): ").strip().lower() == "y"
+        location = "40.2837,-111.635" if use_default_location else input("Enter ZIP code: ").strip()
+        weather = fetch_weather(location) or {"temperature": "N/A", "wind_speed": "N/A", "precipitation": "N/A"}
+
+        # Calculate accuracy and log the session
+        accuracy = (hits / arrows) * 100
+        log_practice_session(date, distance, arrows, hits, accuracy, weather["temperature"], weather["wind_speed"], weather["precipitation"])
+
+        print(f"Session logged successfully: {date}, {distance} yards, {arrows} arrows, {hits} hits.")
     except Exception as e:
         print(f"Error logging session: {e}")
 
 
-# --- Feature: Generating a JSON Report ---
+    # --- Feature: Generating a JSON Report ---
 def generate_json_report(stats):
     """
     Generates a JSON report of the calculated statistics.

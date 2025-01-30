@@ -1,8 +1,7 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 from tkinter import StringVar, IntVar, messagebox
-from tkinter.simpledialog import askstring
-import os
+from datetime import datetime
 from utils import (
     log_practice_session,
     calculate_statistics,
@@ -11,15 +10,14 @@ from utils import (
 )
 from weather_utils import fetch_weather
 from visualizations import plot_accuracy_over_time, plot_accuracy_by_distance
-from datetime import datetime
 
-# Cache for location
-location_cache = {"use_default_location": True, "zipcode": None}
+# Location cache to avoid repeated prompts
+location_cache = {"use_default_location": None, "zipcode": None}
 
-# Initialize application window
+# --- Initialize Application Window ---
 app = ttk.Window(themename="flatly")
 app.title("Evans Archery Practice Tracker")
-app.geometry("800x600")
+app.geometry("800x800")
 
 # --- Color Palette ---
 PRIMARY_COLOR = "#219EBC"
@@ -27,6 +25,7 @@ SECONDARY_COLOR = "#023047"
 LIGHT_GREEN = "#606C38"
 DARK_GREEN = "#283618"
 YELLOW = "#FFB703"
+ORANGE = "#FB8500"
 WHITE = "#FFFFFF"
 
 # --- Styles ---
@@ -53,36 +52,66 @@ distance_var = IntVar()
 arrows_var = IntVar()
 hits_var = IntVar()
 
+def prompt_location():
+    """Prompt for location if not already cached."""
+    global location_cache
+    if location_cache["use_default_location"] is None:
+        use_default_location = messagebox.askyesno(
+            "Location", "Are you practicing at the Timpanogos Archery Club?"
+        )
+        if use_default_location:
+            location_cache["use_default_location"] = True
+            location_cache["zipcode"] = "40.2837,-111.635"  # Default location
+        else:
+            zipcode = ttk.dialogs.Querybox.askstring("Enter ZIP Code", "Please enter your ZIP code:")
+            if zipcode:
+                location_cache["use_default_location"] = False
+                location_cache["zipcode"] = zipcode
+            else:
+                messagebox.showerror("Error", "No ZIP code provided. Unable to fetch weather.")
+                return False
+    return True
+
 def submit_session():
     """Logs the session and clears input fields."""
-    date = date_var.get()
+    date_input = date_var.get()
     distance = distance_var.get()
     arrows = arrows_var.get()
     hits = hits_var.get()
 
-    # Set the current date if the date field is empty
-    if not date.strip():
-        date = datetime.today().strftime('%m/%d/%Y')
-
-    # Validation for other fields
-    if distance <= 0 or arrows <= 0 or hits < 0 or hits > arrows:
+    # Validate inputs
+    if not distance or distance <= 0 or not arrows or arrows <= 0 or hits < 0 or hits > arrows:
         messagebox.showerror("Invalid Input", "Please provide valid input for all fields.")
         return
 
+    # Handle the date input
+    if not date_input:  # Use today's date if left empty
+        date = datetime.today().strftime('%Y-%m-%d')
+    else:
+        try:
+            # Convert MM/DD/YYYY to YYYY-MM-DD
+            date = datetime.strptime(date_input, '%m/%d/%Y').strftime('%Y-%m-%d')
+        except ValueError:
+            messagebox.showerror("Invalid Input", "Please enter the date in MM/DD/YYYY format.")
+            return
+
     try:
-        # Use cached location for weather details
-        query = location_cache["zipcode"]  # Cached location (default or provided by the user)
-        
-        log_practice_session(date, distance, arrows, hits, query)
+        # Check for cached location and fetch weather
+        if not prompt_location():
+            return
+        weather = fetch_weather(location_cache["zipcode"]) or {"temperature": "N/A", "wind_speed": "N/A", "precipitation": "N/A"}
+
+        # Calculate accuracy and log session
+        accuracy = (hits / arrows) * 100
+        log_practice_session(date, distance, arrows, hits, accuracy, weather["temperature"], weather["wind_speed"], weather["precipitation"])
+
         messagebox.showinfo("Success", "Session logged successfully!")
-        
         # Reset fields
         date_var.set("")
         distance_var.set(0)
         arrows_var.set(0)
         hits_var.set(0)
-        
-        display_statistics()  # Refresh statistics
+        display_statistics()  # Refresh statistics after logging a session
     except Exception as e:
         messagebox.showerror("Error", f"Failed to log session: {e}")
 
@@ -142,36 +171,23 @@ display_statistics()
 weather_frame = ttk.Frame(tabs, style="TFrame.DarkBlue.TFrame")
 tabs.add(weather_frame, text="Weather")
 
-def prompt_location():
-    """Prompt the user for their practice location and cache it."""
-    global location_cache
-    if location_cache["zipcode"] is None:
-        use_default_location = messagebox.askyesno("Location", "Are you practicing at the Timpanogos Archery Club?")
-        if use_default_location:
-            location_cache["zipcode"] = "40.2837,-111.635"
-        else:
-            zipcode = askstring("Enter ZIP Code", "Please enter your ZIP code:")
-            if zipcode:
-                location_cache["zipcode"] = zipcode
-            else:
-                messagebox.showerror("Error", "No ZIP code provided.")
-                return False
-    return True
-
 def display_weather():
-    """Fetches and displays current weather data."""
+    """Fetches and displays current weather data using the cached location."""
     try:
-        if not prompt_location():
+        if not prompt_location():  # Ensure location is cached before proceeding
             return
+
+        # Use cached location to fetch weather
         query = location_cache["zipcode"]
         weather = fetch_weather(query)
         if weather:
-            weather_text.set(f"Temperature: {weather['temperature']}°F\n"
+            weather_text.set(f"Location: {query}\n"
+                             f"Temperature: {weather['temperature']}°F\n"
                              f"Wind Speed: {weather['wind_speed']} mph\n"
                              f"Precipitation: {weather['precipitation']} mm\n"
                              f"Condition: {weather['condition']}")
         else:
-            weather_text.set("Error fetching weather data.")
+            weather_text.set("Error fetching weather data. Please try again.")
     except Exception as e:
         weather_text.set(f"Error: {e}")
 
