@@ -1,4 +1,8 @@
-pandas
-matplotlib
-requests
-pytest
+pandas==1.5.3          # For handling dataframes and CSV files
+numpy==1.24.2          # For numerical calculations
+matplotlib==3.6.3      # For plotting graphs of statistics
+fpdf==1.7.2            # For generating PDF reports
+requests==2.28.1       # For making HTTP requests (the Weather API call)
+python-dotenv==1.0.0   # For loading environment variables from a .env file
+pytest==8.3.4          # For testing
+pytest-mock==3.10.0    # For mocking in pytest

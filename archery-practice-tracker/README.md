@@ -73,6 +73,8 @@ archery-practice-tracker/
 Ensure you have Python 3 installed. Run the following command to install required libraries:
 pip install -r requirements.txt
 
+The requirements.txt has dependencies list so that you have all the needed items to run the program. 
+
 ### 2. Set Up Environment Variables
 Create a .env file in the project root to store your Weather API key and default location:
 WEATHER_API_KEY=your_api_key_here
