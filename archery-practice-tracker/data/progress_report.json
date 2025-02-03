@@ -1,42 +1,275 @@
 {
-    "total_arrows": 100,
-    "overall_accuracy": 85.5,
+    "total_arrows": 181,
+    "overall_accuracy": 81.21546961325967,
     "most_practiced_distances": [
         20,
-        30
+        30,
+        50,
+        40,
+        70,
+        45,
+        33,
+        55,
+        75
     ],
     "accuracy_trends": [
         {
+            "date": "2025-01-01",
+            "accuracy": 83.33,
+            "temperature": 23.4,
+            "wind_speed": 2.9,
+            "precipitation": 0.0
+        },
+        {
+            "date": "2025-01-02",
+            "accuracy": 75.0,
+            "temperature": 23.4,
+            "wind_speed": 2.9,
+            "precipitation": 0.0
+        },
+        {
+            "date": "2025-01-18",
+            "accuracy": 100.0,
+            "temperature": 23.4,
+            "wind_speed": 2.9,
+            "precipitation": 0.0
+        },
+        {
+            "date": "2025-01-19",
+            "accuracy": 91.81818181818181,
+            "temperature": 23.4,
+            "wind_speed": 2.9,
+            "precipitation": 0.0
+        },
+        {
+            "date": "2025-01-21",
+            "accuracy": 85.0,
+            "temperature": 23.399999999999995,
+            "wind_speed": 2.9,
+            "precipitation": 0.0
+        },
+        {
+            "date": "2025-01-25",
+            "accuracy": 66.67,
+            "temperature": 30.0,
+            "wind_speed": 3.0,
+            "precipitation": 0.5
+        },
+        {
+            "date": "2025-01-29",
+            "accuracy": 69.666,
+            "temperature": 24.419999999999998,
+            "wind_speed": 2.3,
+            "precipitation": 0.0
+        },
+        {
             "date": "2025-01-30",
-            "accuracy": 90.0,
-            "temperature": 70.0,
-            "wind_speed": 5.0,
+            "accuracy": 75.0,
+            "temperature": 25.325,
+            "wind_speed": 2.2,
+            "precipitation": 0.0
+        },
+        {
+            "date": "2025-02-03",
+            "accuracy": 85.71428571428571,
+            "temperature": 55.0,
+            "wind_speed": 4.5,
             "precipitation": 0.0
         }
     ],
     "practice_frequency": {
-        "20": 3,
-        "30": 2
+        "20": 2,
+        "30": 2,
+        "50": 2,
+        "40": 2,
+        "70": 2,
+        "45": 2,
+        "33": 2,
+        "55": 2,
+        "75": 2,
+        "35": 1,
+        "80": 1,
+        "78": 1,
+        "88": 1,
+        "10": 1,
+        "15": 1,
+        "12": 1,
+        "60": 1,
+        "22": 1,
+        "65": 1
     },
     "accuracy_by_distance": {
-        "20": {
+        "10": {
             "most_recent_best": [
-                95.0,
+                0.0,
                 "2025-01-30"
             ],
             "average_by_year": {
-                "2025": 92.5
+                "2025": 0.0
+            }
+        },
+        "12": {
+            "most_recent_best": [
+                100.0,
+                "2025-01-30"
+            ],
+            "average_by_year": {
+                "2025": 100.0
+            }
+        },
+        "15": {
+            "most_recent_best": [
+                100.0,
+                "2025-01-30"
+            ],
+            "average_by_year": {
+                "2025": 100.0
+            }
+        },
+        "20": {
+            "most_recent_best": [
+                100.0,
+                "2025-01-18"
+            ],
+            "average_by_year": {
+                "2025": 91.66499999999999
+            }
+        },
+        "22": {
+            "most_recent_best": [
+                100.0,
+                "2025-01-30"
+            ],
+            "average_by_year": {
+                "2025": 100.0
             }
         },
         "30": {
             "most_recent_best": [
-                85.0,
-                "2025-01-30"
+                75.0,
+                "2025-01-02"
+            ],
+            "average_by_year": {
+                "2025": 52.5
+            }
+        },
+        "33": {
+            "most_recent_best": [
+                100.0,
+                "2025-01-19"
+            ],
+            "average_by_year": {
+                "2025": 90.0
+            }
+        },
+        "35": {
+            "most_recent_best": [
+                100.0,
+                "2025-01-19"
+            ],
+            "average_by_year": {
+                "2025": 100.0
+            }
+        },
+        "40": {
+            "most_recent_best": [
+                100.0,
+                "2025-01-19"
             ],
             "average_by_year": {
                 "2025": 80.0
             }
+        },
+        "45": {
+            "most_recent_best": [
+                100.0,
+                "2025-01-19"
+            ],
+            "average_by_year": {
+                "2025": 91.66499999999999
+            }
+        },
+        "50": {
+            "most_recent_best": [
+                100.0,
+                "2025-01-19"
+            ],
+            "average_by_year": {
+                "2025": 91.66499999999999
+            }
+        },
+        "55": {
+            "most_recent_best": [
+                100.0,
+                "2025-01-21"
+            ],
+            "average_by_year": {
+                "2025": 80.0
+            }
+        },
+        "60": {
+            "most_recent_best": [
+                66.67,
+                "2025-01-25"
+            ],
+            "average_by_year": {
+                "2025": 66.67
+            }
+        },
+        "65": {
+            "most_recent_best": [
+                85.71428571428571,
+                "2025-02-03"
+            ],
+            "average_by_year": {
+                "2025": 85.71428571428571
+            }
+        },
+        "70": {
+            "most_recent_best": [
+                100.0,
+                "2025-01-19"
+            ],
+            "average_by_year": {
+                "2025": 100.0
+            }
+        },
+        "75": {
+            "most_recent_best": [
+                75.0,
+                "2025-01-21"
+            ],
+            "average_by_year": {
+                "2025": 70.83500000000001
+            }
+        },
+        "78": {
+            "most_recent_best": [
+                100.0,
+                "2025-01-29"
+            ],
+            "average_by_year": {
+                "2025": 100.0
+            }
+        },
+        "80": {
+            "most_recent_best": [
+                100.0,
+                "2025-01-19"
+            ],
+            "average_by_year": {
+                "2025": 100.0
+            }
+        },
+        "88": {
+            "most_recent_best": [
+                75.0,
+                "2025-01-29"
+            ],
+            "average_by_year": {
+                "2025": 75.0
+            }
         }
     },
-    "consistency_score": 5.0
+    "consistency_score": 23.993850891962765
 }
