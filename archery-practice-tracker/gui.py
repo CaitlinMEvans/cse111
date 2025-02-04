@@ -1,6 +1,6 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
-from tkinter import StringVar, IntVar, messagebox
+from tkinter import StringVar, IntVar, messagebox, simpledialog
 from datetime import datetime
 from utils import (
     log_practice_session,
@@ -63,7 +63,8 @@ def prompt_location():
             location_cache["use_default_location"] = True
             location_cache["zipcode"] = "40.2837,-111.635"  # Default location
         else:
-            zipcode = ttk.dialogs.Querybox.askstring("Enter ZIP Code", "Please enter your ZIP code:")
+            # zipcode = ttk.dialogs.Querybox.askstring("Enter ZIP Code", "Please enter your ZIP code:")
+            zipcode = simpledialog.askstring("Input", "Enter your ZIP code:")
             if zipcode:
                 location_cache["use_default_location"] = False
                 location_cache["zipcode"] = zipcode
