@@ -62,6 +62,7 @@ archery-practice-tracker/
 ├── tests/               # Directory for unit tests -- Moved to main directory. 
 │   ├── test_utils.py
 │   ├── test_visualizations.py
+│   └── test_weather_utils.py
 ├── data/                # Directory for CSV logs and reports
 ├── exports/             # Directory for visualization exports
 ├── requirements.txt     # Python dependencies
@@ -94,8 +95,9 @@ Upon running the program, you will see the following menu:
 2. View practice statistics
 3. View current weather
 4. View distance-based recommendations
-5. View visualizations
-6. Quit
+5. Plot accuracy over time
+6. Plot accuracy by distance
+7. Quit
 ```
 ## Main Menu Breakdown
 ### 1. Log a New Practice Session
@@ -115,10 +117,13 @@ Detailed forecast
 ### 4. View Distance-Based Recommendations
 Highlights distances where accuracy falls below the set threshold (default: 75%).
 Suggests distances to focus on for improvement.
-### 5. View Visualizations
+### 5 & 6 View Visualizations
 Line Chart: Accuracy trends over time.
 Bar Chart: Accuracy by distance.
 Option to export charts as PNG and PDF.
+
+### 7. Quit the program 
+Goodbye message. 
 
 ## Example Output
 ### Practice Statistics Example
