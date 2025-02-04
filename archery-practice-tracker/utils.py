@@ -179,6 +179,9 @@ def export_terminal(stats):
     :param stats: The statistics dictionary to export.
     """
     try:
+        if not stats:
+            raise ValueError("No statistics available to export. Please log a session first.")
+
         # Prompt to export statistics to JSON
         export_json = input("\nWould you like to export the statistics to a JSON report? (y/n): ").strip().lower()
         if export_json == "y":
@@ -190,13 +193,20 @@ def export_terminal(stats):
         if export_pdf == "y":
             generate_pdf_report(stats)
             print("Statistics exported as PDF.")
+    except ValueError as e:
+        print(f"Error: {e}")
     except Exception as e:
         print(f"An error occurred during export: {e}")
+
 
 
 def view_statistics():
     """Fetch and display practice statistics with export options."""
     try:
+        # Ensure session log file exists
+        if not os.path.exists(file_path):
+            raise FileNotFoundError("Session log file not found. Please log a session first.")
+
         stats = calculate_statistics()
 
         print("\n--- Practice Statistics ---")
@@ -221,6 +231,14 @@ def view_statistics():
                 print(f"    Average for {year}: {avg:.2f}%")
 
         print(f"\nConsistency score (lower is better): {stats['consistency_score']:.2f}")
+
+        # Prompt to export statistics
+        export_terminal(stats)
+
+    except FileNotFoundError:
+        print("Session log file not found. Please log a session first.")
+    except Exception as e:
+        print(f"Error: {e}")
 
         # Prompt to export statistics
         export_json = input("\nWould you like to export the statistics to a JSON report? (y/n): ").strip().lower()
@@ -312,7 +330,7 @@ def generate_json_report(stats):
 # --- Feature: Generating a PDF Report ---
 def generate_pdf_report(stats):
     """
-    Generates a PDF report of the calculated statistics.
+    Generates a PDF report of the calculated statistics or handles missing data gracefully.
     """
     pdf_file_path = os.path.join(BASE_DIR, "data", "progress_report.pdf")
     pdf = FPDF()
@@ -324,6 +342,14 @@ def generate_pdf_report(stats):
     pdf.set_font("Arial", style="B", size=16)
     pdf.cell(200, 10, txt="Archery Practice Tracker Report", ln=True, align="C")
     pdf.ln(10)
+
+    # Check if stats is empty or None
+    if not stats:
+        pdf.set_font("Arial", size=12)
+        pdf.cell(0, 10, "No session data available. Please log a session first.", ln=True)
+        pdf.output(pdf_file_path)
+        print(f"PDF report saved to {pdf_file_path} (No data available).")
+        return
 
     # Overall statistics
     pdf.set_font("Arial", style="B", size=12)
@@ -340,47 +366,41 @@ def generate_pdf_report(stats):
     pdf.cell(0, 10, ", ".join(map(str, stats['most_practiced_distances'])), ln=True)
     pdf.ln(10)
 
-    # Accuracy trends by date
+    # Accuracy trends
     pdf.set_font("Arial", style="B", size=12)
     pdf.cell(0, 10, "Accuracy Trends by Date:", ln=True)
     pdf.set_font("Arial", size=12)
-    for trend in stats['accuracy_trends']:
-        pdf.cell(0, 10, f"{trend['date']}: {trend['accuracy']:.2f}% accuracy", ln=True)
+    for trend in stats["accuracy_trends"]:
+        pdf.cell(0, 10, f"{trend['date']}: {trend['accuracy']:.1f}% accuracy", ln=True)
         pdf.cell(0, 10, f"  Temp: {trend['temperature']}°F, Wind: {trend['wind_speed']} mph, Precip: {trend['precipitation']} mm", ln=True)
     pdf.ln(10)
 
-    # Practice frequency by distance
+    # Practice frequency
     pdf.set_font("Arial", style="B", size=12)
     pdf.cell(0, 10, "Practice Frequency by Distance:", ln=True)
     pdf.set_font("Arial", size=12)
-    for distance, count in stats['practice_frequency'].items():
-        pdf.cell(0, 10, f"{distance} yards: {count} sessions", ln=True)
+    for distance, sessions in stats["practice_frequency"].items():
+        pdf.cell(0, 10, f"{distance} yards: {sessions} sessions", ln=True)
     pdf.ln(10)
 
     # Accuracy by distance
     pdf.set_font("Arial", style="B", size=12)
     pdf.cell(0, 10, "Accuracy by Distance:", ln=True)
     pdf.set_font("Arial", size=12)
-    for distance, details in stats['accuracy_by_distance'].items():
+    for distance, details in stats["accuracy_by_distance"].items():
         pdf.cell(0, 10, f"{distance} yards:", ln=True)
-        pdf.cell(0, 10, f"  Most Recent Best: {details['most_recent_best'][0]:.2f}% on {details['most_recent_best'][1]}", ln=True)
-        for year, avg in details['average_by_year'].items():
-            pdf.cell(0, 10, f"  Average for {year}: {avg:.2f}%", ln=True)
+        pdf.cell(0, 10, f"  Most Recent Best: {details['most_recent_best'][0]:.1f}% on {details['most_recent_best'][1]}", ln=True)
+        for year, avg in details["average_by_year"].items():
+            pdf.cell(0, 10, f"    Average for {year}: {avg:.1f}%", ln=True)
     pdf.ln(10)
 
     # Consistency score
     pdf.set_font("Arial", style="B", size=12)
-    pdf.cell(0, 10, "Consistency Score (lower is better):", ln=True)
-    pdf.set_font("Arial", size=12)
-    pdf.cell(0, 10, f"{stats['consistency_score']:.2f}", ln=True)
-    pdf.ln(10)
+    pdf.cell(0, 10, f"Consistency score (lower is better): {stats['consistency_score']:.2f}", ln=True)
 
-    # Save PDF
-    try:
-        pdf.output(pdf_file_path)
-        print(f"PDF report saved to {pdf_file_path}")
-    except Exception as e:
-        print(f"An error occurred while saving the PDF report: {e}")
+    # Save the PDF
+    pdf.output(pdf_file_path)
+    print(f"PDF report saved to {pdf_file_path}")
 
 # --- Feature: Distance-Based Recommendations ---
 def recommend_distances(threshold=75, max_distance=100):

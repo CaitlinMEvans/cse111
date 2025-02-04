@@ -76,14 +76,58 @@ def test_generate_json_report(mock_open_file):
 # --- Test: Exporting PDF Report ---
 @patch("utils.FPDF")
 def test_generate_pdf_report(mock_fpdf):
-    """Test that the PDF report is correctly generated."""
-    stats = {"total_arrows": 100, "overall_accuracy": 90.0}
+    """Test that the PDF report is correctly generated with all updated statistics."""
+    # Mock statistics dictionary with all required keys
+    stats = {
+        "total_arrows": 243,
+        "overall_accuracy": 82.72,
+        "most_practiced_distances": [10, 20, 30],
+        "accuracy_trends": [
+            {"date": "2025-02-01", "accuracy": 85.0, "temperature": 50, "wind_speed": 10, "precipitation": 0},
+            {"date": "2025-02-02", "accuracy": 95.0, "temperature": 55, "wind_speed": 8, "precipitation": 1},
+        ],
+        "practice_frequency": {10: 5, 20: 3, 30: 2},
+        "accuracy_by_distance": {
+            10: {
+                "most_recent_best": (95.0, "2025-02-02"),
+                "average_by_year": {"2025": 85.0},
+            },
+            20: {
+                "most_recent_best": (90.0, "2025-02-01"),
+                "average_by_year": {"2025": 80.0},
+            },
+        },
+        "consistency_score": 5.2,
+    }
+
+    # Call the function to test
     generate_pdf_report(stats)
 
-    expected_file_path = os.path.abspath(os.path.join("data", "progress_report.pdf"))
-    actual_file_path = os.path.abspath(mock_fpdf.return_value.output.call_args[0][0])
+    # Ensure the PDF object is created and methods are called correctly
+    mock_fpdf.assert_called_once()
+    pdf_instance = mock_fpdf.return_value
+    pdf_instance.add_page.assert_called()
+    pdf_instance.set_font.assert_called()
 
-    assert actual_file_path == expected_file_path, f"Expected {expected_file_path}, but got {actual_file_path}."
+    # Verify specific calls for PDF content
+    pdf_instance.cell.assert_any_call(0, 10, "Overall Statistics:", ln=True)
+    pdf_instance.cell.assert_any_call(0, 10, "Total arrows shot: 243", ln=True)
+    pdf_instance.cell.assert_any_call(0, 10, "Overall accuracy: 82.72%", ln=True)
+    pdf_instance.cell.assert_any_call(0, 10, "Most Practiced Distances:", ln=True)
+    pdf_instance.cell.assert_any_call(0, 10, "10, 20, 30", ln=True)
+    pdf_instance.cell.assert_any_call(0, 10, "Accuracy Trends by Date:", ln=True)
+    pdf_instance.cell.assert_any_call(0, 10, "2025-02-01: 85.0% accuracy", ln=True)
+    pdf_instance.cell.assert_any_call(0, 10, "  Temp: 50°F, Wind: 10 mph, Precip: 0 mm", ln=True)
+    pdf_instance.cell.assert_any_call(0, 10, "Practice Frequency by Distance:", ln=True)
+    pdf_instance.cell.assert_any_call(0, 10, "10 yards: 5 sessions", ln=True)
+    pdf_instance.cell.assert_any_call(0, 10, "Accuracy by Distance:", ln=True)
+    pdf_instance.cell.assert_any_call(0, 10, "10 yards:", ln=True)
+    pdf_instance.cell.assert_any_call(0, 10, "  Most Recent Best: 95.0% on 2025-02-02", ln=True)
+    pdf_instance.cell.assert_any_call(0, 10, "Consistency score (lower is better): 5.20", ln=True)
+
+    # Resolve full path for output verification
+    expected_pdf_path = os.path.abspath(os.path.join("data", "progress_report.pdf"))
+    pdf_instance.output.assert_called_once_with(expected_pdf_path)
 
 
 # --- Test: Viewing Statistics ---
