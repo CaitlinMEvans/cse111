@@ -195,7 +195,7 @@ def export_terminal(stats):
 
 
 def view_statistics():
-    """Fetch and display practice statistics with terminal-specific export functionality."""
+    """Fetch and display practice statistics with export options."""
     try:
         stats = calculate_statistics()
 
@@ -222,8 +222,16 @@ def view_statistics():
 
         print(f"\nConsistency score (lower is better): {stats['consistency_score']:.2f}")
 
-        # Call the export_terminal function
-        export_terminal(stats)
+        # Prompt to export statistics
+        export_json = input("\nWould you like to export the statistics to a JSON report? (y/n): ").strip().lower()
+        if export_json == "y":
+            generate_json_report(stats)
+            print("Statistics exported as JSON.")
+
+        export_pdf = input("Would you like to export the statistics to a PDF report? (y/n): ").strip().lower()
+        if export_pdf == "y":
+            generate_pdf_report(stats)
+            print("Statistics exported as PDF.")
 
     except FileNotFoundError:
         print("Session log file not found. Please log a session first.")
@@ -323,6 +331,49 @@ def generate_pdf_report(stats):
     pdf.set_font("Arial", size=12)
     pdf.cell(0, 10, f"Total arrows shot: {stats['total_arrows']}", ln=True)
     pdf.cell(0, 10, f"Overall accuracy: {stats['overall_accuracy']:.2f}%", ln=True)
+    pdf.ln(10)
+
+    # Most practiced distances
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(0, 10, "Most Practiced Distances:", ln=True)
+    pdf.set_font("Arial", size=12)
+    pdf.cell(0, 10, ", ".join(map(str, stats['most_practiced_distances'])), ln=True)
+    pdf.ln(10)
+
+    # Accuracy trends by date
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(0, 10, "Accuracy Trends by Date:", ln=True)
+    pdf.set_font("Arial", size=12)
+    for trend in stats['accuracy_trends']:
+        pdf.cell(0, 10, f"{trend['date']}: {trend['accuracy']:.2f}% accuracy", ln=True)
+        pdf.cell(0, 10, f"  Temp: {trend['temperature']}°F, Wind: {trend['wind_speed']} mph, Precip: {trend['precipitation']} mm", ln=True)
+    pdf.ln(10)
+
+    # Practice frequency by distance
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(0, 10, "Practice Frequency by Distance:", ln=True)
+    pdf.set_font("Arial", size=12)
+    for distance, count in stats['practice_frequency'].items():
+        pdf.cell(0, 10, f"{distance} yards: {count} sessions", ln=True)
+    pdf.ln(10)
+
+    # Accuracy by distance
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(0, 10, "Accuracy by Distance:", ln=True)
+    pdf.set_font("Arial", size=12)
+    for distance, details in stats['accuracy_by_distance'].items():
+        pdf.cell(0, 10, f"{distance} yards:", ln=True)
+        pdf.cell(0, 10, f"  Most Recent Best: {details['most_recent_best'][0]:.2f}% on {details['most_recent_best'][1]}", ln=True)
+        for year, avg in details['average_by_year'].items():
+            pdf.cell(0, 10, f"  Average for {year}: {avg:.2f}%", ln=True)
+    pdf.ln(10)
+
+    # Consistency score
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(0, 10, "Consistency Score (lower is better):", ln=True)
+    pdf.set_font("Arial", size=12)
+    pdf.cell(0, 10, f"{stats['consistency_score']:.2f}", ln=True)
+    pdf.ln(10)
 
     # Save PDF
     try:
@@ -330,7 +381,6 @@ def generate_pdf_report(stats):
         print(f"PDF report saved to {pdf_file_path}")
     except Exception as e:
         print(f"An error occurred while saving the PDF report: {e}")
-
 
 # --- Feature: Distance-Based Recommendations ---
 def recommend_distances(threshold=75, max_distance=100):
